@@ -6,14 +6,25 @@ import {
 } from "react-router-dom";
 import './index.css'
 import Root from "./routes/root";
-
+import Index from './routes/index.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import App from './App.jsx'
+import ErrorPage from './routes/errorPage.jsx';
+import BrowseAllCards from './routes/browseallcards.jsx';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Root />
+    element: <Root />,
+    errorElement: <ErrorPage/>,
+    children: [
+      {
+        path: "index",
+        element: <Index />,
+      },{
+        path: "browseallcards",
+        element: <BrowseAllCards />,
+      },
+    ],
   },
 ]);
 
