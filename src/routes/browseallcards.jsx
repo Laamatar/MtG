@@ -9,12 +9,37 @@ export default function BrowseAllCards() {
 
 
     const [show, setShow] = useState(false);
+    const [cardsFoundNum, setCardsFound] = useState(0);
+    const [loading, setLoading] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
+    const [searchData, setSearchData] = useState(
+        {
+            white: false,
+            blue: false,
+            black: false,
+            red: false,
+            green: false,
+            exclusivecolors: false,
+            type: "",
+            searchTerm: "",
+            searchFromTypes: false,
+            standard: false,
+            modern: false,
+            pauper: false,
+            commander: false,
+            oathbreaker: false
+        }
+    );
+
+    const [APIsearch, setAPIsearch] = useState("search?q=lang=en+legal=standard");
+    const [cards, setCards] = useState();
+    const [error, setError] = useState("");
+
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
 
-    function toggleShowFilters(){
-        if(showFilters){
+    function toggleShowFilters() {
+        if (showFilters) {
             setShowFilters(false);
         } else {
             setShowFilters(true);
@@ -22,12 +47,151 @@ export default function BrowseAllCards() {
     }
 
 
+    const getData = async () => {
+        setLoading(true);
+        console.log("fetching data...")
+        fetch("https://api.scryfall.com/cards/" + APIsearch)
+            .then(response => response.json())
+            .then(result => {
+                if(result.object == "error"){
+                    console.log(result.code)
+                    console.log(result.details)
+                    setCardsFound(0);
+                    setError("No cards found.")
+                    setLoading(false)
+                } else {
+                    setError("")
+                    console.log(result)
+                    setCardsFound(result.total_cards)
+                    setCards(result)
+                    setLoading(false)
+                }
+            });
+    }
+
+    useEffect(() => {
+        getData();
+    }, [APIsearch]);
+
+
+    function handleChange(e) {
+        var key = e.target.name;
+        if (key == "white" || key == "blue" || key == "black" || key == "red" || key == "green") {
+            console.log("toggle color: " + e.target.name)
+            var value;
+            if (e.target.value == "true") {
+                value = false;
+            } else if (e.target.value == "false") {
+                value = true;
+            }
+            setSearchData({ ...searchData, [key]: value })
+        } else if (key == "colorexcl") {
+            console.log("toggle color exclusivity")
+            var value;
+            if (e.target.value == "true") {
+                value = false;
+            } else if (e.target.value == "false") {
+                value = true;
+            }
+            setSearchData({ ...searchData, exclusivecolors: value })
+        } else if (key == "typeselect") {
+            console.log("change type to " + e.target.value)
+            var value = e.target.value;
+            setSearchData({ ...searchData, type: value })
+        } else if (key == "searchbar") {
+        } else if (key == "typesearch") {
+            console.log("toggle searching from types")
+            var value;
+            if (e.target.value == "true") {
+                value = false;
+            } else if (e.target.value == "false") {
+                value = true;
+            }
+            setSearchData({ ...searchData, searchFromTypes: value })
+        } else if (key == "standard" || key == "modern" || key == "pauper" || key == "commander" || key == "oathbreaker") {
+            console.log("toggle format: " + e.target.name)
+            var value;
+            if (e.target.value == "true") {
+                value = false;
+            } else if (e.target.value == "false") {
+                value = true;
+            }
+            setSearchData({ ...searchData, [key]: value })
+        }
+    }
+
+
+    function handleSearchSubmit(e) {
+        e.preventDefault();
+        console.log("filter applied!");
+        console.log(searchData);
+        var searchquery = "";
+        var colors = "";
+        var colorsquery = "";
+        var type = "";
+        var search = "";
+        var format = "";
+        if (searchData.white) {
+            colors = colors + "w";
+        }
+        if (searchData.blue) {
+            colors = colors + "u";
+        }
+        if (searchData.black) {
+            colors = colors + "b";
+        }
+        if (searchData.red) {
+            colors = colors + "r";
+        }
+        if (searchData.green) {
+            colors = colors + "g";
+        }
+        if (searchData.exclusivecolors) {
+            colorsquery = "colors=" + colors;
+        } else {
+            colorsquery = "colors>=" + colors;
+        }
+
+        if (!searchData.white && !searchData.blue && !searchData.black && !searchData.red && !searchData.green) {
+            colorsquery = "";
+        }
+
+        if (searchData.type != "Card type" && searchData.type != "") {
+            type = "+t=" + searchData.type;
+        }
+        if (searchData.searchFromTypes && searchData.searchTerm != "") {
+            search = "+t=" + searchData.searchTerm;
+        } else if (searchData.searchTerm != "") {
+            search = "+name=" + searchData.searchTerm;
+        }
+        if (searchData.standard) {
+            format = format + "+legal=standard";
+        }
+        if (searchData.modern) {
+            format = format + "+legal=modern";
+        }
+        if (searchData.pauper) {
+            format = format + "+legal=pauper";
+        }
+        if (searchData.commander) {
+            format = format + "+legal=commander";
+        }
+        if (searchData.oathbreaker) {
+            format = format + "+legal=oathbreaker";
+        }
+        searchquery = "search?q=" + colorsquery + format + type + search + "+lang=english+game=paper";
+        console.log(searchquery);
+        setAPIsearch(searchquery);
+
+    }
+
+
+
+
 
     return (
         <div>
             <div>
-
-
                 <Offcanvas show={show} onHide={handleClose} backdrop="static" placement="end">
                     <Offcanvas.Header closeButton>
                         <Offcanvas.Title>Card name</Offcanvas.Title>
@@ -38,7 +202,7 @@ export default function BrowseAllCards() {
                         <h4>Text: </h4>
 
                         <p>I will not close if you click outside of me.</p>
-                        
+
                         <Row className="d-flex pt-4">
                             <Col xs={6} className="d-flex align-items-center justify-content-center">
                                 <Button variant="primary" style={{ width: "90%" }}>Add to collection</Button>
@@ -52,81 +216,173 @@ export default function BrowseAllCards() {
 
                 <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
                     <Row>
-                        <h2 className="pt-4 ps-4">Filter cards:</h2>
-                        <Button variant="secondary" onClick={toggleShowFilters}>{showFilters ? "hide options" : "show options"}</Button>
-                        {showFilters 
-                        ?
+                        <h4 className="pt-4 ps-4">Filter cards:</h4>
+                        <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide options" : "Show options"}</Button>
+                        {showFilters
+                            ?
+                            <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
+                                <Col xs={12} className="pt-2">
+                                    <Form.Check
+                                        inline
+                                        label="White"
+                                        name="white"
+                                        type="checkbox"
+                                        value={searchData.white}
+                                        defaultChecked={searchData.white}
+                                        id={`inline-select-w`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Blue"
+                                        name="blue"
+                                        type="checkbox"
+                                        value={searchData.blue}
+                                        defaultChecked={searchData.blue}
+                                        id={`inline-select-u`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Black"
+                                        name="black"
+                                        type="checkbox"
+                                        value={searchData.black}
+                                        defaultChecked={searchData.black}
+                                        id={`inline-select-b`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Red"
+                                        name="red"
+                                        type="checkbox"
+                                        value={searchData.red}
+                                        defaultChecked={searchData.red}
+                                        id={`inline-select-r`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Green"
+                                        name="green"
+                                        type="checkbox"
+                                        value={searchData.green}
+                                        defaultChecked={searchData.green}
+                                        id={`inline-select-g`}
+                                    />
+                                </Col>
+                                <Col>
+                                    <Form.Check
+                                        label="Only these colors"
+                                        name="colorexcl"
+                                        value={searchData.exclusivecolors}
+                                        defaultChecked={searchData.exclusivecolors}
+                                        type="checkbox"
+                                        id={`inline-select-exlusivecolor`}
+                                    />
+                                </Col>
 
-                        <Form className="ps-4">
-                            <Col xs={4}>
+                                <Col className="pt-2" xs={12} sm={6} md={4} xl={2}>
+                                    <Form.Select aria-label="Default select example" name="typeselect" defaultValue={searchData.type}>
+                                        <option>Card type</option>
+                                        <option value="artifact">Artifact</option>
+                                        <option value="enchantment">Enchantment</option>
+                                        <option value="creature">Creature</option>
+                                        <option value="instant">Instant</option>
+                                        <option value="land">Land</option>
+                                        <option value="legendary">Legendary</option>
+                                        <option value="planeswalker">Planeswalker</option>
+                                        <option value="sorcery">Sorcery</option>
+                                    </Form.Select>
+                                </Col>
 
-                                <p>Color:</p>
-                                <Form.Check
-                                    inline
-                                    label="White"
-                                    name="group1"
-                                    type="checkbox"
-                                    id={`inline-select-w`}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="Blue"
-                                    name="group1"
-                                    type="checkbox"
-                                    id={`inline-select-u`}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="Black"
-                                    type="checkbox"
-                                    id={`inline-select-b`}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="Red"
-                                    type="checkbox"
-                                    id={`inline-select-r`}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="Green"
-                                    type="checkbox"
-                                    id={`inline-select-g`}
-                                />
+                                <Col xs={12} sm={8} md={6} xl={4} xxl={3} className="py-2">
 
-                            </Col>
+                                    <Form.Label htmlFor="search">Search by name</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        id="search"
+                                        name="searchbar"
+                                        value={searchData.searchTerm}
+                                        onChange={e => setSearchData({ ...searchData, searchTerm: e.target.value })}
 
-                            <Col xs={6} className="py-2">
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Search from types instead"
+                                        type="checkbox"
+                                        name="typesearch"
+                                        value={searchData.searchFromTypes}
+                                        defaultChecked={searchData.searchFromTypes}
+                                        id={`inline-select-searchtype`}
+                                    />
+                                </Col>
+                                <Col>
+                                    <p>Legal in formats:</p>
+                                    <Form.Check
+                                        inline
+                                        label="Standard"
+                                        name="standard"
+                                        type="checkbox"
+                                        value={searchData.standard}
+                                        defaultChecked={searchData.standard}
+                                        id={`inline-select-standard`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Modern"
+                                        name="modern"
+                                        type="checkbox"
+                                        value={searchData.modern}
+                                        defaultChecked={searchData.modern}
+                                        id={`inline-select-modern`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Pauper"
+                                        name="pauper"
+                                        type="checkbox"
+                                        value={searchData.pauper}
+                                        defaultChecked={searchData.pauper}
+                                        id={`inline-select-pauper`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Commander"
+                                        name="commander"
+                                        type="checkbox"
+                                        value={searchData.commander}
+                                        defaultChecked={searchData.commander}
+                                        id={`inline-select-commander`}
+                                    />
+                                    <Form.Check
+                                        inline
+                                        label="Oathbreaker"
+                                        name="oathbreaker"
+                                        type="checkbox"
+                                        value={searchData.oathbreaker}
+                                        defaultChecked={searchData.oathbreaker}
+                                        id={`inline-select-oathbreaker`}
+                                    />
+                                </Col>
+                                <Col className="py-4" xs={12} sm={6} md={4} xl={2}>
+                                    <Button type="submit" variant="primary">Apply filters</Button>
+                                </Col>
+                            </Form>
 
-                                <Form.Label htmlFor="search">Search by name</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    id="search"
+                            :
+                            <div></div>
 
-                                />
-
-                            </Col>
-                        </Form>
-
-                        :
-                        <div></div>
-                    
                         }
                     </Row>
                 </div>
-                <Row className="px-4 py-4">
-                    <div style={{ height: "10vh"}} />
-                    <AllCards handleClick={handleShow}/>
-                    <Row className="d-flex pt-4">
-                        <Col xs={6} className="d-flex align-items-center justify-content-center">
-                            <Button variant="secondary" style={{ width: "50%" }}>Previous page</Button>
-                        </Col>
-                        <Col xs={6} className="d-flex align-items-center justify-content-center">
-                            <Button variant="secondary" style={{ width: "50%" }}>Next page</Button>
-                        </Col>
+                {!loading
+                    ?
+                    <Row className="px-4 py-4">
+                        <div style={{ height: "5vh" }} />
+                        {error == "" ? <h4 className="pt-4">Found {cardsFoundNum} cards {cardsFoundNum>=180 ? "(Showing 180 cards)" : "(Showing " + cardsFoundNum + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
+                        <AllCards handleClick={handleShow} cards={cards} />
                     </Row>
-
-                </Row>
+                    :
+                    <div />
+                }
 
             </div>
         </div>
