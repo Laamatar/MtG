@@ -1,5 +1,5 @@
 import AllCards from "./allcards"
-import { Row, Col, Button, Form, Offcanvas } from "react-bootstrap"
+import { Row, Col, Button, Form, Offcanvas, ListGroup } from "react-bootstrap"
 import placeholder from "../assets/placeholder.png";
 import { useState, useEffect } from "react";
 
@@ -30,13 +30,101 @@ export default function BrowseAllCards() {
             oathbreaker: false
         }
     );
+    const [selectedCard, setSelectedCard] = useState({
+        name: "Card name",
+        oracle: "Card text",
+        price: "0€",
+        gatherer: "",
+        edhrec: "",
+        tgcplayer: "",
+        scryfall: "",
+        img: "",
+        types: ""
+
+    })
 
     const [APIsearch, setAPIsearch] = useState("search?q=lang=en+legal=standard");
     const [cards, setCards] = useState();
     const [error, setError] = useState("");
 
     const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
+
+    function handleShow(e) {
+        e.preventDefault();
+        var name;
+        var oracle;
+        var price;
+        var gathererlink;
+        var edhrec;
+        var tgcplayer;
+        var scryfall;
+        var img;
+        var types;
+
+        try {
+            name = e.target.elements.name.value;
+        } catch (error) {
+            name = "Card name"
+        }
+
+
+        if (e.target.elements.oracle.value != undefined) {
+            oracle = e.target.elements.oracle.value;
+        } else {
+            oracle = "Card text";
+        }
+        if (e.target.elements.price.value != undefined) {
+            price = e.target.elements.price.value;
+        } else {
+            price = "Card price";
+        }
+        try {
+            gathererlink = e.target.elements.gathererlink.value;
+        } catch (error) {
+            gathererlink = "Card gatherer link";
+        }
+        try {
+            edhrec = e.target.elements.edhrec.value;
+        } catch (error) {
+            edhrec = "Card edhrec link";
+        }
+        try {
+            tgcplayer = e.target.elements.tgcplayer.value;
+        } catch (error) {
+            tgcplayer = "Card tgcplayer link";
+        }
+        try {
+            scryfall = e.target.elements.scryfall.value;
+        } catch (error) {
+            scryfall = "Card scryfall link";
+        }
+        try {
+            img = e.target.elements.imgsrc.value;
+        } catch (error) {
+            img = "Card img";
+        }
+        try {
+            types = e.target.elements.typeline.value;
+        } catch (error) {
+            types = "Card types";
+        }
+
+        var cardinfo = {
+            name: name,
+            oracle: oracle,
+            price: price,
+            gatherer: gathererlink,
+            edhrec: edhrec,
+            tgcplayer: tgcplayer,
+            scryfall: scryfall,
+            img: img,
+            types: types
+
+        };
+        setSelectedCard(cardinfo);
+        setShow(true);
+
+    }
 
     function toggleShowFilters() {
         if (showFilters) {
@@ -53,7 +141,7 @@ export default function BrowseAllCards() {
         fetch("https://api.scryfall.com/cards/" + APIsearch)
             .then(response => response.json())
             .then(result => {
-                if(result.object == "error"){
+                if (result.object == "error") {
                     console.log(result.code)
                     console.log(result.details)
                     setCardsFound(0);
@@ -156,7 +244,7 @@ export default function BrowseAllCards() {
             colorsquery = "";
         }
 
-        if (searchData.type != "Card type" && searchData.type != "") {
+        if (searchData.type != "Any card type" && searchData.type != "") {
             type = "+t=" + searchData.type;
         }
         if (searchData.searchFromTypes && searchData.searchTerm != "") {
@@ -194,14 +282,33 @@ export default function BrowseAllCards() {
             <div>
                 <Offcanvas show={show} onHide={handleClose} backdrop="static" placement="end">
                     <Offcanvas.Header closeButton>
-                        <Offcanvas.Title>Card name</Offcanvas.Title>
+                        <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
                     </Offcanvas.Header>
                     <Offcanvas.Body>
-                        <img src={placeholder} width={"100%"} className="my-4"></img>
-                        <h4>Manacost:</h4>
-                        <h4>Text: </h4>
+                        <img src={selectedCard.img} width={"100%"} className="my-4"></img>
+                        <h4>{selectedCard.types}</h4>
 
-                        <p>I will not close if you click outside of me.</p>
+                        {selectedCard.oracle.split(".").map(function (item, idx) {
+                            return (
+                                <span key={idx}>
+                                    {item + ". "}
+                                </span>
+                            )
+                        })
+                        }
+
+                        <h5 className="py-4">Price {selectedCard.price}€</h5>
+
+
+                        <ListGroup>
+                            <ListGroup.Item><a href={selectedCard.scryfall} target="_blank">Scryfall</a></ListGroup.Item>
+                            <ListGroup.Item><a href={selectedCard.gatherer} target="_blank">Gatherer</a></ListGroup.Item>
+                            <ListGroup.Item><a href={selectedCard.edhrec} target="_blank">EDHrec</a></ListGroup.Item>
+                            <ListGroup.Item><a href={selectedCard.tgcplayer} target="_blank">TGCPlayer</a></ListGroup.Item>
+                        </ListGroup>
+
+
+
 
                         <Row className="d-flex pt-4">
                             <Col xs={6} className="d-flex align-items-center justify-content-center">
@@ -281,7 +388,7 @@ export default function BrowseAllCards() {
 
                                 <Col className="pt-2" xs={12} sm={6} md={4} xl={2}>
                                     <Form.Select aria-label="Default select example" name="typeselect" defaultValue={searchData.type}>
-                                        <option>Card type</option>
+                                        <option>Any card type</option>
                                         <option value="artifact">Artifact</option>
                                         <option value="enchantment">Enchantment</option>
                                         <option value="creature">Creature</option>
@@ -377,7 +484,7 @@ export default function BrowseAllCards() {
                     ?
                     <Row className="px-4 py-4">
                         <div style={{ height: "5vh" }} />
-                        {error == "" ? <h4 className="pt-4">Found {cardsFoundNum} cards {cardsFoundNum>=180 ? "(Showing 180 cards)" : "(Showing " + cardsFoundNum + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
+                        {error == "" ? <h4 className="pt-4">Found {cardsFoundNum} cards {cardsFoundNum >= 180 ? "(Loaded 180 cards)" : "(Loaded " + cardsFoundNum + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
                         <AllCards handleClick={handleShow} cards={cards} />
                     </Row>
                     :

@@ -32,7 +32,6 @@ function AllCards(props) {
         <div className="mt-4">
             <Row>
                 {fetchedCards.map(function (card, i) {
-                    console.log(card.name);
                     if (i < pagenum * 20 && i > pagenum * 20 - 20) {
                         return <MtGCard key={uniqid()} card={card} onclick={props.handleClick}></MtGCard>
                     }
