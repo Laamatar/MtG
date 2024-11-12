@@ -1,0 +1,14 @@
+card collection + wishlist
+    localstorage
+        loads card ids and then fetches from scryfall api
+
+
+deckbuilding
+    card search from browse
+    export
+        copyable text
+        txt file
+
+saved decks
+    implementation same as collection and wishlist
+    option to open in deckbuilder

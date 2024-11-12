@@ -6,8 +6,6 @@ import { useState, useEffect } from "react";
 
 export default function BrowseAllCards() {
 
-
-
     const [show, setShow] = useState(false);
     const [cardsFoundNum, setCardsFound] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -39,7 +37,8 @@ export default function BrowseAllCards() {
         tgcplayer: "",
         scryfall: "",
         img: "",
-        types: ""
+        types: "",
+        id: ""
 
     })
 
@@ -60,6 +59,7 @@ export default function BrowseAllCards() {
         var scryfall;
         var img;
         var types;
+        var id;
 
         try {
             name = e.target.elements.name.value;
@@ -108,6 +108,11 @@ export default function BrowseAllCards() {
         } catch (error) {
             types = "Card types";
         }
+        try {
+            id = e.target.elements.id.value;
+        } catch (error) {
+            id = "Card id";
+        }
 
         var cardinfo = {
             name: name,
@@ -118,7 +123,8 @@ export default function BrowseAllCards() {
             tgcplayer: tgcplayer,
             scryfall: scryfall,
             img: img,
-            types: types
+            types: types,
+            id: id
 
         };
         setSelectedCard(cardinfo);
@@ -134,8 +140,52 @@ export default function BrowseAllCards() {
         }
     }
 
+    function addToLocalStorage(name, value){
+        localStorage.setItem(name, JSON.stringify(value))
+        console.log(JSON.parse(localStorage.getItem(name)))
+        console.log("add to local storage : " + name)
+        
+    }
+
+
+    async function addToCollection(e) {
+        e.preventDefault();
+        var collection = JSON.parse(localStorage.getItem("collection"))
+        var id = e.target.elements.idOfSelectedCardC.value;
+        if (collection.length != 0) {
+            if (!collection.includes(id)) {
+                console.log(id)
+                collection.push(id)
+                addToLocalStorage("collection", collection)
+            }
+        } else {
+            console.log(id)
+            collection.push(id)
+            addToLocalStorage("collection", collection)
+        }
+    }
+
+    async function addToWishlist(e) {
+        e.preventDefault();
+        var wishlist = JSON.parse(localStorage.getItem("collection"))
+        var id = e.target.elements.idOfSelectedCardC.value;
+        if (wishlist.length != 0) {
+            if (!wishlist.includes(id)) {
+                console.log(id)
+                wishlist.push(id)
+                addToLocalStorage("wishlist", wishlist)
+            }
+        } else {
+            console.log(id)
+            wishlist.push(id)
+            addToLocalStorage("wishlist", wishlist)
+        }
+    }
 
     const getData = async () => {
+        //localStorage.setItem("collection", JSON.stringify([]))
+        var col = JSON.parse(localStorage.getItem("collection"))
+        var wl = JSON.parse(localStorage.getItem("collection"))
         setLoading(true);
         console.log("fetching data...")
         fetch("https://api.scryfall.com/cards/" + APIsearch)
@@ -159,6 +209,7 @@ export default function BrowseAllCards() {
 
     useEffect(() => {
         getData();
+
     }, [APIsearch]);
 
 
@@ -275,12 +326,10 @@ export default function BrowseAllCards() {
 
 
 
-
-
     return (
         <div>
             <div>
-                <Offcanvas show={show} onHide={handleClose} backdrop="static" placement="end">
+                <Offcanvas show={show} onHide={handleClose} placement="end">
                     <Offcanvas.Header closeButton>
                         <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
                     </Offcanvas.Header>
@@ -311,12 +360,18 @@ export default function BrowseAllCards() {
 
 
                         <Row className="d-flex pt-4">
-                            <Col xs={6} className="d-flex align-items-center justify-content-center">
-                                <Button variant="primary" style={{ width: "90%" }}>Add to collection</Button>
-                            </Col>
-                            <Col xs={6} className="d-flex align-items-center justify-content-center">
-                                <Button variant="secondary" style={{ width: "90%" }}>Add to wishlist</Button>
-                            </Col>
+                            <Form onSubmit={addToCollection}>
+                                <Form.Control type="text" defaultValue={selectedCard.id} id="idOfSelectedCardC" className="d-none" />
+                                <Col xs={6} className="d-flex align-items-center justify-content-center">
+                                    <Button variant="primary" type="submit" style={{ width: "90%" }}>Add to collection</Button>
+                                </Col>
+                            </Form>
+                            <Form onSubmit={addToWishlist}>
+                                <Form.Control type="text" defaultValue={selectedCard.id} id="idOfSelectedCardWL" className="d-none" />
+                                <Col xs={6} className="d-flex align-items-center justify-content-center">
+                                    <Button variant="secondary" type="submit" style={{ width: "90%" }}>Add to wishlist</Button>
+                                </Col>
+                            </Form>
                         </Row>
                     </Offcanvas.Body>
                 </Offcanvas>

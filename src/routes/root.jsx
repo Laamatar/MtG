@@ -21,7 +21,7 @@ export default function Root() {
               <Link to={"browseallcards"}>Browse all cards</Link>
               </NavDropdown.Item>
               <NavDropdown.Item href="#action/3.2">
-                Owned cards
+              <Link to={"collection"}>Collection</Link>
               </NavDropdown.Item>
               <NavDropdown.Item href="#action/3.3">Wishlist</NavDropdown.Item>
             </NavDropdown>

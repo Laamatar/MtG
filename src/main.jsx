@@ -10,6 +10,7 @@ import Index from './routes/index.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import ErrorPage from './routes/errorPage.jsx';
 import BrowseAllCards from './routes/browseallcards.jsx';
+import Collection from './routes/collection.jsx';
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,9 @@ const router = createBrowserRouter([
       },{
         path: "browseallcards",
         element: <BrowseAllCards />,
+      },{
+        path: "collection",
+        element: <Collection />,
       },
     ],
   },

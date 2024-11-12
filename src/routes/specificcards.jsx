@@ -3,23 +3,16 @@ import uniqid from "uniqid";
 import { Row, Col, Button } from "react-bootstrap";
 import { useState, useEffect } from "react";
 
-function AllCards(props) {
+function SomeCards(props) {
 
     const [pagenum, setpagenum] = useState(1)
-    const [fetchedCards, setFetchedCards] = useState([])
     // for (let i = 0; i < 20; i++) {
     //     // note: we are adding a key prop here to allow react to uniquely identify each
     //     // element in this array. see: https://reactjs.org/docs/lists-and-keys.html
     //     rows.push(<MtGCard key={uniqid()} onclick={props.handleClick} />);
     // }
 
-
-
-    useEffect(() => {
-        if (props.cards != undefined) {
-            setFetchedCards(props.cards.data);
-        }
-    }, []);
+    console.log(props.cards)
 
     function nextPage() {
         setpagenum(pagenum + 1)
@@ -31,14 +24,16 @@ function AllCards(props) {
     return (
         <div className="mt-4">
             <Row>
-                {fetchedCards.map(function (card, i) {
+                {props.cards.map(function (card, i) {
                     if (i < pagenum * 20 && i >= pagenum * 20 - 20) {
-                        return <MtGCard key={uniqid()} card={card} onclick={props.handleClick}></MtGCard>
+
+                        console.log(card)
+                        return <MtGCard key={uniqid()} card={props.cards[i]} onclick={props.handleClick}></MtGCard>
                     }
                 })}
             </Row>
 
-            <h4>Showing results from {pagenum*20-20} to {pagenum*20}</h4>
+            <h4>Showing results from {pagenum * 20 - 20} to {pagenum * 20}</h4>
             {props.cards != undefined
                 ?
                 <Row className="d-flex pt-4">
@@ -48,9 +43,9 @@ function AllCards(props) {
                     </Col>
                     <Col xs={2} className="d-flex align-items-center justify-content-center"><h5>Page {pagenum}</h5></Col>
                     <Col xs={5} className="d-flex align-items-center justify-content-center">
-                    {pagenum == 9 ? <div></div> : <Button variant="secondary" style={{ width: "50%" }} onClick={nextPage}>Next page</Button>}
+                        {pagenum == 9 ? <div></div> : <Button variant="secondary" style={{ width: "50%" }} onClick={nextPage}>Next page</Button>}
 
-                        
+
                     </Col>
                 </Row>
                 :
@@ -60,4 +55,4 @@ function AllCards(props) {
     )
 }
 
-export default AllCards
+export default SomeCards
