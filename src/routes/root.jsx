@@ -17,13 +17,15 @@ export default function Root() {
             <Nav.Link href="#home">New deck</Nav.Link>
             <Nav.Link href="#link">Decks</Nav.Link>
             <NavDropdown title="Cards" id="basic-nav-dropdown">
-              <NavDropdown.Item href="#action/3.1">
+              <NavDropdown.Item>
               <Link to={"browseallcards"}>Browse all cards</Link>
               </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.2">
+              <NavDropdown.Item>
               <Link to={"collection"}>Collection</Link>
               </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.3">Wishlist</NavDropdown.Item>
+              <NavDropdown.Item>
+              <Link to={"wishlist"}>Wishlist</Link>
+              </NavDropdown.Item>
             </NavDropdown>
           </Nav>
         </Navbar.Collapse>

@@ -150,42 +150,39 @@ export default function BrowseAllCards() {
 
     async function addToCollection(e) {
         e.preventDefault();
-        var collection = JSON.parse(localStorage.getItem("collection"))
+        var col = JSON.parse(localStorage.getItem("collection"))
         var id = e.target.elements.idOfSelectedCardC.value;
-        if (collection.length != 0) {
-            if (!collection.includes(id)) {
+        if (col.length != 0) {
+            if (!col.includes(id)) {
                 console.log(id)
-                collection.push(id)
-                addToLocalStorage("collection", collection)
+                col.push(id)
+                addToLocalStorage("collection", col)
             }
         } else {
             console.log(id)
-            collection.push(id)
-            addToLocalStorage("collection", collection)
+            col.push(id)
+            addToLocalStorage("collection", col)
         }
     }
 
     async function addToWishlist(e) {
         e.preventDefault();
-        var wishlist = JSON.parse(localStorage.getItem("collection"))
-        var id = e.target.elements.idOfSelectedCardC.value;
-        if (wishlist.length != 0) {
-            if (!wishlist.includes(id)) {
+        var wl = JSON.parse(localStorage.getItem("wishlist"))
+        var id = e.target.elements.idOfSelectedCardWL.value;
+        if (wl.length != 0) {
+            if (!wl.includes(id)) {
                 console.log(id)
-                wishlist.push(id)
-                addToLocalStorage("wishlist", wishlist)
+                wl.push(id)
+                addToLocalStorage("wishlist", wl)
             }
         } else {
             console.log(id)
-            wishlist.push(id)
-            addToLocalStorage("wishlist", wishlist)
+            wl.push(id)
+            addToLocalStorage("wishlist", wl)
         }
     }
 
     const getData = async () => {
-        //localStorage.setItem("collection", JSON.stringify([]))
-        var col = JSON.parse(localStorage.getItem("collection"))
-        var wl = JSON.parse(localStorage.getItem("collection"))
         setLoading(true);
         console.log("fetching data...")
         fetch("https://api.scryfall.com/cards/" + APIsearch)

@@ -4,7 +4,7 @@ import placeholder from "../assets/placeholder.png";
 import { useState, useEffect } from "react";
 
 
-export default function BrowseAllCards() {
+export default function Collection() {
 
     const [collection, setCollection] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
@@ -148,8 +148,7 @@ export default function BrowseAllCards() {
 
     function refreshData() {
         console.log(cards)
-        localStorage.removeItem("collection")
-        localStorage.setItem("collection", JSON.stringify([]))
+        setFilteredCards(cards)
     }
 
 
@@ -279,14 +278,18 @@ export default function BrowseAllCards() {
                 if (colorfiltered[i].type_line.includes(searchData.type)) {
                     typefiltered.push(colorfiltered[i])
                 }
-
-            }
-
-            if (searchData.searchFromTypes && searchData.searchTerm != "") {
-                if (colorfiltered[i].type_line.toLowerCase().includes(searchData.searchTerm.toLowerCase())) {
+            } else if (searchData.type == "Any card type" || searchData.type == "") {
+                if (!searchData.searchFromTypes) {
                     typefiltered.push(colorfiltered[i])
                 }
             }
+
+            if (searchData.searchFromTypes && searchData.searchTerm != "") {
+                if (colorfiltered[i].type_line.toLowerCase().includes(searchData.searchTerm.toLowerCase()) && !typefiltered.includes(colorfiltered[i])) {
+                    typefiltered.push(colorfiltered[i])
+                }
+            }
+
 
         }
 
@@ -381,12 +384,13 @@ export default function BrowseAllCards() {
 
     function removeFromCollection(e) {
         e.preventDefault();
-        var collection = JSON.parse(localStorage.getItem("collection"))
+        var col = JSON.parse(localStorage.getItem("collection"))
         var id = e.target.elements.idselected.value;
-        if (collection.includes(id)) {
+        if (col.includes(id)) {
             console.log(id)
-            collection.splice(collection.indexOf(id), 1);
-            addToLocalStorage("collection", collection)
+            col.splice(col.indexOf(id), 1);
+            addToLocalStorage("collection", col)
+            refreshData()
         }
 
     }
@@ -396,7 +400,6 @@ export default function BrowseAllCards() {
     return (
         <div>
             <div>
-                <Button onClick={refreshData}>Refresh</Button>
                 <Offcanvas show={show} onHide={handleClose} placement="end">
                     <Offcanvas.Header closeButton>
                         <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
@@ -434,8 +437,10 @@ export default function BrowseAllCards() {
 
                 <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
                     <Row>
-                        <h4 className="pt-4 ps-4">Filter cards:</h4>
-                        <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide options" : "Show options"}</Button>
+                        <Container className="py-4 ps-4">
+                            <Button variant="secondary" onClick={refreshData} style={{ width: "15rem" }}>Reset filters and refresh cards</Button>
+                        </Container>
+                        <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide filter options" : "Show filter options"}</Button>
                         {showFilters
                             ?
                             <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
@@ -584,7 +589,7 @@ export default function BrowseAllCards() {
                 {!loading
                     ?
                     <Row className="px-4 py-4">
-                        <div style={{ height: "5vh" }} />
+                        <div style={{ height: "8vh" }} />
                         {error == "" ? <h4 className="pt-4">Found {filteredCards.length} cards {filteredCards.length >= 180 ? "(Loaded 180 cards)" : "(Loaded " + filteredCards.length + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
                         <SomeCards handleClick={handleShow} cards={filteredCards} />
                     </Row>

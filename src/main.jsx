@@ -11,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import ErrorPage from './routes/errorPage.jsx';
 import BrowseAllCards from './routes/browseallcards.jsx';
 import Collection from './routes/collection.jsx';
+import Wishlist from './routes/wishlist.jsx';
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,9 @@ const router = createBrowserRouter([
       },{
         path: "collection",
         element: <Collection />,
+      },{
+        path: "wishlist",
+        element: <Wishlist />,
       },
     ],
   },
