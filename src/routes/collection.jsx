@@ -6,21 +6,19 @@ import { useState, useEffect } from "react";
 
 export default function BrowseAllCards() {
 
-
-
     const [collection, setCollection] = useState([]);
-    const [wishlist, setWishlist] = useState([]);
+    const [filteredCards, setFilteredCards] = useState([]);
     const [show, setShow] = useState(false);
+    const [error, setError] = useState("")
     const [loading, setLoading] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [searchData, setSearchData] = useState(
         {
-            white: false,
-            blue: false,
-            black: false,
-            red: false,
-            green: false,
-            exclusivecolors: false,
+            white: true,
+            blue: true,
+            black: true,
+            red: true,
+            green: true,
             type: "",
             searchTerm: "",
             searchFromTypes: false,
@@ -45,9 +43,7 @@ export default function BrowseAllCards() {
 
     })
 
-    const [APIsearch, setAPIsearch] = useState("search?q=lang=en+legal=standard");
     const [cards, setCards] = useState([]);
-    const [error, setError] = useState("");
 
     const handleClose = () => setShow(false);
 
@@ -69,8 +65,6 @@ export default function BrowseAllCards() {
         } catch (error) {
             name = "Card name"
         }
-
-
         if (e.target.elements.oracle.value != undefined) {
             oracle = e.target.elements.oracle.value;
         } else {
@@ -146,12 +140,9 @@ export default function BrowseAllCards() {
     useEffect(() => {
         var col = JSON.parse(localStorage.getItem("collection"))
         setCollection(col);
-        var wl = JSON.parse(localStorage.getItem("collection"))
-        setWishlist(wl);
         console.log(collection)
-        console.log(wishlist)
-        var promises = [setCollection(col), setWishlist(wl)];
         fetchData()
+        setFilteredCards(cards)
 
     }, []);
 
@@ -180,7 +171,9 @@ export default function BrowseAllCards() {
                 if (result.object == "error") {
                     console.log(result.code)
                     console.log(result.details)
+                    setError("No cards found.")
                 } else {
+                    setError("");
                     console.log(result)
                     return (result)
                 }
@@ -202,15 +195,7 @@ export default function BrowseAllCards() {
                 value = true;
             }
             setSearchData({ ...searchData, [key]: value })
-        } else if (key == "colorexcl") {
-            console.log("toggle color exclusivity")
-            var value;
-            if (e.target.value == "true") {
-                value = false;
-            } else if (e.target.value == "false") {
-                value = true;
-            }
-            setSearchData({ ...searchData, exclusivecolors: value })
+
         } else if (key == "typeselect") {
             console.log("change type to " + e.target.value)
             var value = e.target.value;
@@ -241,74 +226,157 @@ export default function BrowseAllCards() {
     function handleSearchSubmit(e) {
         e.preventDefault();
         console.log("filter applied!");
-        console.log(searchData);
-        var searchquery = "";
-        var colors = "";
-        var colorsquery = "";
-        var type = "";
-        var search = "";
-        var format = "";
-        if (searchData.white) {
-            colors = colors + "w";
+        console.log(cards);
+        var colorfiltered = []
+        var filtered = []
+
+        for (let i = 0; i < cards.length; i++) {
+
+            if (searchData.white) {
+                if (cards[i].colors.includes("W")) {
+                    colorfiltered.push(cards[i])
+                }
+            }
+
+            if (cards[i].colors.length == 0) {
+                colorfiltered.push(cards[i])
+            }
+
+            if (searchData.blue) {
+                if (cards[i].colors.includes("U")) {
+                    if (!colorfiltered.includes(cards[i])) {
+                        colorfiltered.push(cards[i])
+                    }
+                }
+            } if (searchData.black) {
+
+                if (cards[i].colors.includes("B")) {
+                    if (!colorfiltered.includes(cards[i])) {
+                        colorfiltered.push(cards[i])
+                    }
+                }
+            } if (searchData.red) {
+
+                if (cards[i].colors.includes("R")) {
+                    if (!colorfiltered.includes(cards[i])) {
+                        colorfiltered.push(cards[i])
+                    }
+                }
+            } if (searchData.green) {
+
+                if (cards[i].colors.includes("G")) {
+                    if (!colorfiltered.includes(cards[i])) {
+                        colorfiltered.push(cards[i])
+                    }
+                }
+            }
+
+
         }
-        if (searchData.blue) {
-            colors = colors + "u";
-        }
-        if (searchData.black) {
-            colors = colors + "b";
-        }
-        if (searchData.red) {
-            colors = colors + "r";
-        }
-        if (searchData.green) {
-            colors = colors + "g";
-        }
-        if (searchData.exclusivecolors) {
-            colorsquery = "colors=" + colors;
-        } else {
-            colorsquery = "colors>=" + colors;
+        var typefiltered = []
+        for (let i = 0; i < colorfiltered.length; i++) {
+            if (searchData.type != "Any card type" && searchData.type != "") {
+                if (colorfiltered[i].type_line.includes(searchData.type)) {
+                    typefiltered.push(colorfiltered[i])
+                }
+
+            }
+
+            if (searchData.searchFromTypes && searchData.searchTerm != "") {
+                if (colorfiltered[i].type_line.toLowerCase().includes(searchData.searchTerm.toLowerCase())) {
+                    typefiltered.push(colorfiltered[i])
+                }
+            }
+
         }
 
-        if (!searchData.white && !searchData.blue && !searchData.black && !searchData.red && !searchData.green) {
-            colorsquery = "";
+        var searchfiltered = []
+
+        for (let i = 0; i < typefiltered.length; i++) {
+            if (searchData.searchFromTypes && searchData.searchTerm != "") {
+                if (typefiltered[i].type_line.toLowerCase().includes(searchData.searchTerm.toLowerCase())) {
+                    searchfiltered.push(typefiltered[i])
+                }
+            } else if (searchData.searchTerm != "") {
+                if (typefiltered[i].name.toLowerCase().includes(searchData.searchTerm.toLowerCase())) {
+                    searchfiltered.push(typefiltered[i])
+                }
+
+            } else {
+                searchfiltered.push(typefiltered[i])
+
+            }
+
+
         }
 
-        if (searchData.type != "Any card type" && searchData.type != "") {
-            type = "+t=" + searchData.type;
-        }
-        if (searchData.searchFromTypes && searchData.searchTerm != "") {
-            search = "+t=" + searchData.searchTerm;
-        } else if (searchData.searchTerm != "") {
-            search = "+name=" + searchData.searchTerm;
-        }
-        if (searchData.standard) {
-            format = format + "+legal=standard";
-        }
-        if (searchData.modern) {
-            format = format + "+legal=modern";
-        }
-        if (searchData.pauper) {
-            format = format + "+legal=pauper";
-        }
-        if (searchData.commander) {
-            format = format + "+legal=commander";
-        }
-        if (searchData.oathbreaker) {
-            format = format + "+legal=oathbreaker";
-        }
-        searchquery = "search?q=" + colorsquery + format + type + search + "+lang=english+game=paper";
-        console.log(searchquery);
-        setAPIsearch(searchquery);
+        var formatfiltered = []
 
+        for (let i = 0; i < typefiltered.length; i++) {
+            if (searchData.standard) {
+
+                if (searchfiltered[i].legalities.standard == "legal") {
+                    formatfiltered.push(searchfiltered[i])
+
+                }
+            }
+            if (searchData.modern) {
+
+                if (searchfiltered[i].legalities.modern == "legal") {
+                    if (!formatfiltered.includes(searchfiltered[i])) {
+                        formatfiltered.push(searchfiltered[i])
+                    }
+
+                }
+            }
+
+            if (searchData.pauper) {
+
+                if (searchfiltered[i].legalities.pauper == "legal") {
+                    if (!formatfiltered.includes(searchfiltered[i])) {
+                        formatfiltered.push(searchfiltered[i])
+                    }
+
+                }
+            }
+            if (searchData.commander) {
+
+                if (searchfiltered[i].legalities.commander == "legal") {
+                    if (!formatfiltered.includes(searchfiltered[i])) {
+                        formatfiltered.push(searchfiltered[i])
+                    }
+
+                }
+            }
+            if (searchData.oathbreaker) {
+
+                if (searchfiltered[i].legalities.oathbreaker == "legal") {
+                    if (!formatfiltered.includes(searchfiltered[i])) {
+                        formatfiltered.push(searchfiltered[i])
+                    }
+
+                }
+            }
+            if (!searchData.standard && !searchData.modern && !searchData.pauper && !searchData.commander && !searchData.oathbreaker) {
+                formatfiltered.push(searchfiltered[i])
+
+            }
+
+        }
+
+        filtered = formatfiltered;
+
+
+        setFilteredCards(filtered);
     }
 
 
-    function addToLocalStorage(name, value){
+    function addToLocalStorage(name, value) {
         localStorage.setItem(name, JSON.stringify(value))
         console.log(JSON.parse(localStorage.getItem(name)))
         console.log("add to local storage : " + name)
         fetchData()
-        
+
     }
 
     function removeFromCollection(e) {
@@ -418,28 +486,18 @@ export default function BrowseAllCards() {
                                         id={`inline-select-g`}
                                     />
                                 </Col>
-                                <Col>
-                                    <Form.Check
-                                        label="Only these colors"
-                                        name="colorexcl"
-                                        value={searchData.exclusivecolors}
-                                        defaultChecked={searchData.exclusivecolors}
-                                        type="checkbox"
-                                        id={`inline-select-exlusivecolor`}
-                                    />
-                                </Col>
 
                                 <Col className="pt-2" xs={12} sm={6} md={4} xl={2}>
                                     <Form.Select aria-label="Default select example" name="typeselect" defaultValue={searchData.type}>
                                         <option>Any card type</option>
-                                        <option value="artifact">Artifact</option>
-                                        <option value="enchantment">Enchantment</option>
-                                        <option value="creature">Creature</option>
-                                        <option value="instant">Instant</option>
-                                        <option value="land">Land</option>
-                                        <option value="legendary">Legendary</option>
-                                        <option value="planeswalker">Planeswalker</option>
-                                        <option value="sorcery">Sorcery</option>
+                                        <option value="Artifact">Artifact</option>
+                                        <option value="Enchantment">Enchantment</option>
+                                        <option value="Creature">Creature</option>
+                                        <option value="Instant">Instant</option>
+                                        <option value="Land">Land</option>
+                                        <option value="Legendary">Legendary</option>
+                                        <option value="Planeswalker">Planeswalker</option>
+                                        <option value="Sorcery">Sorcery</option>
                                     </Form.Select>
                                 </Col>
 
@@ -527,8 +585,8 @@ export default function BrowseAllCards() {
                     ?
                     <Row className="px-4 py-4">
                         <div style={{ height: "5vh" }} />
-                        {error == "" ? <h4 className="pt-4">Found {cards.length} cards {cards.length >= 180 ? "(Loaded 180 cards)" : "(Loaded " + cards.length + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
-                        <SomeCards handleClick={handleShow} cards={cards} />
+                        {error == "" ? <h4 className="pt-4">Found {filteredCards.length} cards {filteredCards.length >= 180 ? "(Loaded 180 cards)" : "(Loaded " + filteredCards.length + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
+                        <SomeCards handleClick={handleShow} cards={filteredCards} />
                     </Row>
                     :
                     <div />
