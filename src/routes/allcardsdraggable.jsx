@@ -34,7 +34,7 @@ function AllCardsDrop(props) {
             <Row>
                 {fetchedCards.map(function (card, i) {
                     if (i < pagenum * 20 && i >= pagenum * 20 - 20) {
-                        return <MtGCardDrop key={uniqid()} card={card} onclick={props.handleClick}></MtGCardDrop>
+                        return <MtGCardDrop key={uniqid()} card={card} onclick={props.handleClick} ></MtGCardDrop>
                     }
                 })}
             </Row>

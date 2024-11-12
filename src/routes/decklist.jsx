@@ -6,6 +6,7 @@ import uniqid from "uniqid"
 function Decklist(props) {
 
     const [fetchedCards, setFetchedCards] = useState([])
+    const [fd, setFD] = useState([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     // for (let i = 0; i < 20; i++) {
@@ -22,10 +23,15 @@ function Decklist(props) {
             promises.push(getData(props.deck[i].id));
         }
         setLoading(true)
-        await Promise.all(promises).then(results => setFetchedCards(results)).then(setLoading(false));
+        await Promise.all(promises).then(results => {
+            setFetchedCards(results)
+            setFD(props.deck)
+        }
+        ).then(setLoading(false));
     }
 
     useEffect(() => {
+
         fetchData()
 
     }, [props.deck]);
@@ -43,6 +49,7 @@ function Decklist(props) {
                 } else {
                     setError("");
                     console.log(result)
+
                     return (result)
                 }
             });
@@ -53,10 +60,10 @@ function Decklist(props) {
 
     return (
         <div className="mt-4">
-            <Row>
+            <Row id="decklistRow">
                 {fetchedCards.map(function (card, i) {
-                        return <DeckItem card={card} cardamount={props.deck[i].amount} key={uniqid()}></DeckItem>
-                    }
+                    return <DeckItem card={card} cardamount={fd[i].amount} key={uniqid()}></DeckItem>
+                }
                 )}
             </Row>
 

@@ -5,11 +5,10 @@ import AllCardsDrop from './allcardsdraggable';
 import { Draggable } from './draggable';
 import { Droppable } from './droppable';
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Offcanvas, ListGroup, Button, OverlayTrigger, Popover, ListGroupItem } from 'react-bootstrap';
+import { Container, Row, Col, Form, Offcanvas, ListGroup, Button, OverlayTrigger, Popover, ListGroupItem, FormControl } from 'react-bootstrap';
 import Decklist from './decklist';
 
 export default function Deckbuilder() {
-
 
 
     const [show, setShow] = useState(false);
@@ -118,8 +117,14 @@ export default function Deckbuilder() {
 
     useEffect(() => {
         getData();
+        
+        // if(JSON.parse(localStorage.getItem("decktoedit")).name == ""){
+        //     //do stuff
+        //     localStorage.setItem("decktoedit", JSON.stringify({name: "", decklist: []}))
+        // }
+        
 
-    }, [APIsearch]);
+    }, []);
 
 
     function handleChange(e) {
@@ -230,8 +235,30 @@ export default function Deckbuilder() {
         searchquery = "search?q=" + colorsquery + format + type + search + "+lang=english+game=paper";
         console.log(searchquery);
         setAPIsearch(searchquery);
+        getData();
 
     }
+
+    function saveDeck(e){
+        e.preventDefault();
+        console.log(deckname)
+        var deckdata = {
+            name: deckname,
+            decklist: deck
+        }
+        const decksInLS = JSON.parse(localStorage.getItem("decks"))
+        for(let i = 0; i<decksInLS.length; i++){
+            if(decksInLS[i].name == deckname){
+                console.log("alert, name already in use")
+                console.log("message box, use " + deckname + " (copy) instead, y/n")
+                return
+            }
+        }
+
+        localStorage.setItem("decks", JSON.stringify([...decksInLS, deckdata]))
+    }
+
+    const [deckname, setDeckname] = useState("")
 
     return (
         <DndContext onDragEnd={handleDragEnd}>
@@ -255,6 +282,25 @@ export default function Deckbuilder() {
                         <Droppable>
 
                             <Container fluid className='border rounded' style={{ height: "120rem" }}>
+
+                                <Form className='py-2 ps-1' onSubmit={saveDeck}>
+                                    <Row>
+                                        <Col>
+                                            <Form.Control
+                                                type="text"
+                                                id="deckname"
+                                                name="deckname"
+                                                placeholder='name of the deck'
+                                                value={deckname}
+                                                onChange={e => setDeckname(e.target.value)}
+
+                                            />
+                                        </Col>
+                                        <Col>
+                                            <Button variant='outline-success' type='submit'>Save deck</Button>
+                                        </Col>
+                                    </Row>
+                                </Form>
                                 <Decklist deck={deck}></Decklist>
                             </Container>
                         </Droppable>

@@ -84,7 +84,7 @@ function MtGCardDrop(props) {
     return (
         <Col xs={12} sm={6} md={6} xl={4} xxl={3} className="py-2">
             <Container ref={setNodeRef} style={style} {...listeners} {...attributes}>
-                <OverlayTrigger placement="right" overlay={popover}>
+                <OverlayTrigger placement="bottom" overlay={popover}>
                     <Form onSubmit={props.onclick}>
                         <Form.Control type="text" defaultValue={props.card.name} id="name" className="d-none" />
                         <Form.Control type="text" defaultValue={props.card.oracle_text} id="oracle" className="d-none" />

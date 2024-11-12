@@ -13,6 +13,7 @@ import BrowseAllCards from './routes/browseallcards.jsx';
 import Collection from './routes/collection.jsx';
 import Wishlist from './routes/wishlist.jsx';
 import Deckbuilder from './routes/deckbuilder.jsx';
+import Decks from './routes/decks.jsx';
 
 const router = createBrowserRouter([
   {
@@ -35,7 +36,10 @@ const router = createBrowserRouter([
       },{
         path: "deckbuilder",
         element: <Deckbuilder />,
-      },
+      },{
+        path: "decks",
+        element: <Decks />,
+      }
     ],
   },
 ]);

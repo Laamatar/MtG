@@ -1,4 +1,4 @@
-import { Navbar, Nav, NavDropdown, Container } from "react-bootstrap";
+import { Navbar, Nav, NavDropdown, Container, NavbarText } from "react-bootstrap";
 import AllCards from "./allcards";
 import { Outlet, Link } from "react-router-dom";
 
@@ -15,13 +15,13 @@ export default function Root() {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
-                <Nav.Link>
+                <Navbar.Brand>
 
                   <Link to={"deckbuilder"}>New deck</Link>
-                </Nav.Link>
-                <Nav.Link>
-                  Decks
-                </Nav.Link>
+                </Navbar.Brand>
+                <Navbar.Brand>
+                <Link to={"decks"}>Decks</Link>
+                </Navbar.Brand>
                 <NavDropdown title="Cards" id="basic-nav-dropdown">
                   <NavDropdown.Item>
                     <Link to={"browseallcards"}>Browse all cards</Link>
