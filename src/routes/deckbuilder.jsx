@@ -1,12 +1,19 @@
-import AllCards from "./allcards"
-import { Row, Col, Button, Form, Offcanvas, ListGroup, Container } from "react-bootstrap"
-import placeholder from "../assets/placeholder.png";
-import { useState, useEffect } from "react";
+import React from 'react';
+import { DndContext } from '@dnd-kit/core';
+import { useDraggable } from '@dnd-kit/core';
+import AllCardsDrop from './allcardsdraggable';
+import { Draggable } from './draggable';
+import { Droppable } from './droppable';
+import { useState, useEffect } from 'react';
+import { Container, Row, Col, Form, Offcanvas, ListGroup, Button, OverlayTrigger, Popover, ListGroupItem } from 'react-bootstrap';
+import Decklist from './decklist';
+
+export default function Deckbuilder() {
 
 
-export default function BrowseAllCards() {
 
     const [show, setShow] = useState(false);
+    const [deck, setDeck] = useState([]);
     const [cardsFoundNum, setCardsFound] = useState(0);
     const [loading, setLoading] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
@@ -50,85 +57,7 @@ export default function BrowseAllCards() {
 
     function handleShow(e) {
         e.preventDefault();
-        var name;
-        var oracle;
-        var price;
-        var gathererlink;
-        var edhrec;
-        var tgcplayer;
-        var scryfall;
-        var img;
-        var types;
-        var id;
 
-        try {
-            name = e.target.elements.name.value;
-        } catch (error) {
-            name = "Card name"
-        }
-
-
-        if (e.target.elements.oracle.value != undefined) {
-            oracle = e.target.elements.oracle.value;
-        } else {
-            oracle = "Card text";
-        }
-        if (e.target.elements.price.value != undefined) {
-            price = e.target.elements.price.value;
-        } else {
-            price = "Card price";
-        }
-        try {
-            gathererlink = e.target.elements.gathererlink.value;
-        } catch (error) {
-            gathererlink = "Card gatherer link";
-        }
-        try {
-            edhrec = e.target.elements.edhrec.value;
-        } catch (error) {
-            edhrec = "Card edhrec link";
-        }
-        try {
-            tgcplayer = e.target.elements.tgcplayer.value;
-        } catch (error) {
-            tgcplayer = "Card tgcplayer link";
-        }
-        try {
-            scryfall = e.target.elements.scryfall.value;
-        } catch (error) {
-            scryfall = "Card scryfall link";
-        }
-        try {
-            img = e.target.elements.imgsrc.value;
-        } catch (error) {
-            img = "Card img";
-        }
-        try {
-            types = e.target.elements.typeline.value;
-        } catch (error) {
-            types = "Card types";
-        }
-        try {
-            id = e.target.elements.id.value;
-        } catch (error) {
-            id = "Card id";
-        }
-
-        var cardinfo = {
-            name: name,
-            oracle: oracle,
-            price: price,
-            gatherer: gathererlink,
-            edhrec: edhrec,
-            tgcplayer: tgcplayer,
-            scryfall: scryfall,
-            img: img,
-            types: types,
-            id: id
-
-        };
-        setSelectedCard(cardinfo);
-        setShow(true);
 
     }
 
@@ -162,23 +91,6 @@ export default function BrowseAllCards() {
             console.log(id)
             col.push(id)
             addToLocalStorage("collection", col)
-        }
-    }
-
-    async function addToWishlist(e) {
-        e.preventDefault();
-        var wl = JSON.parse(localStorage.getItem("wishlist"))
-        var id = e.target.elements.idOfSelectedCardWL.value;
-        if (wl.length != 0) {
-            if (!wl.includes(id)) {
-                console.log(id)
-                wl.push(id)
-                addToLocalStorage("wishlist", wl)
-            }
-        } else {
-            console.log(id)
-            wl.push(id)
-            addToLocalStorage("wishlist", wl)
         }
     }
 
@@ -321,56 +233,38 @@ export default function BrowseAllCards() {
 
     }
 
-
-
     return (
-        <Container fluid>
-            <Offcanvas show={show} onHide={handleClose} placement="end">
-                <Offcanvas.Header closeButton>
-                    <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
-                </Offcanvas.Header>
-                <Offcanvas.Body>
-                    <img src={selectedCard.img} width={"100%"} className="my-4"></img>
-                    <h4>{selectedCard.types}</h4>
-
-                    {selectedCard.oracle.split(".").map(function (item, idx) {
-                        return (
-                            <span key={idx}>
-                                {item + ". "}
-                            </span>
-                        )
-                    })
-                    }
-
-                    <h5 className="py-4">Price {selectedCard.price}€</h5>
-
-
-                    <ListGroup>
-                        <ListGroup.Item><a href={selectedCard.scryfall} target="_blank">Scryfall</a></ListGroup.Item>
-                        <ListGroup.Item><a href={selectedCard.gatherer} target="_blank">Gatherer</a></ListGroup.Item>
-                        <ListGroup.Item><a href={selectedCard.edhrec} target="_blank">EDHrec</a></ListGroup.Item>
-                        <ListGroup.Item><a href={selectedCard.tgcplayer} target="_blank">TGCPlayer</a></ListGroup.Item>
-                    </ListGroup>
+        <DndContext onDragEnd={handleDragEnd}>
 
 
 
 
-                    <Row className="d-flex pt-4">
-                        <Form onSubmit={addToCollection}>
-                            <Form.Control type="text" defaultValue={selectedCard.id} id="idOfSelectedCardC" className="d-none" />
-                            <Col xs={6} className="d-flex align-items-center justify-content-center">
-                                <Button variant="primary" type="submit" style={{ width: "90%" }}>Add to collection</Button>
-                            </Col>
-                        </Form>
-                        <Form onSubmit={addToWishlist}>
-                            <Form.Control type="text" defaultValue={selectedCard.id} id="idOfSelectedCardWL" className="d-none" />
-                            <Col xs={6} className="d-flex align-items-center justify-content-center">
-                                <Button variant="secondary" type="submit" style={{ width: "90%" }}>Add to wishlist</Button>
-                            </Col>
-                        </Form>
-                    </Row>
-                </Offcanvas.Body>
-            </Offcanvas>
+
+            {!loading
+                ?
+
+                <Row className="px-4 py-4">
+                    <div style={{ height: "8vh" }} />
+                    <Col xs={12} md={6}>
+
+                        {error == "" ? <h4 className="pt-4">Found {cardsFoundNum} cards {cardsFoundNum >= 180 ? "(Loaded 180 cards)" : "(Loaded " + cardsFoundNum + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
+                        <AllCardsDrop handleClick={handleShow} cards={cards} />
+                    </Col>
+                    <Col xs={12} md={6}>
+
+                        <Droppable>
+
+                            <Container fluid className='border rounded' style={{ height: "120rem" }}>
+                                <Decklist deck={deck}></Decklist>
+                            </Container>
+                        </Droppable>
+                    </Col>
+                </Row>
+                :
+                <div />
+            }
+
+
 
             <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
                 <Row>
@@ -531,17 +425,35 @@ export default function BrowseAllCards() {
                     }
                 </Row>
             </div>
-            {!loading
-                ?
-                <Row className="px-4 py-4">
-                    <div style={{ height: "5vh" }} />
-                    {error == "" ? <h4 className="pt-4">Found {cardsFoundNum} cards {cardsFoundNum >= 180 ? "(Loaded 180 cards)" : "(Loaded " + cardsFoundNum + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
-                    <AllCards handleClick={handleShow} cards={cards} />
-                </Row>
-                :
-                <div />
+
+        </DndContext >
+    );
+
+    function handleDragEnd(event) {
+        console.log(deck)
+        if (event.over && event.over.id === 'droppable') {
+            console.log("added card (" + event.active.id + ") to deck")
+            var indeck = false;
+            var newdeck = [];
+            for (let i = 0; i < deck.length; i++) {
+                if (deck[i].id == event.active.id) {
+                    var newamount = deck[i].amount + 1;
+                    indeck = true;
+                    console.log("already in deck")
+                    newdeck.push({ id: deck[i].id, amount: newamount })
+
+                } else {
+                    newdeck.push({ id: deck[i].id, amount: deck[i].amount })
+                }
             }
 
-        </Container>
-    )
+            if (!indeck) {
+                setDeck([...deck, { id: event.active.id, amount: 1 }])
+                console.log("added to deck")
+            } else {
+                setDeck(newdeck)
+            }
+
+        }
+    }
 }

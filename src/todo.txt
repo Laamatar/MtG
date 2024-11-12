@@ -1,6 +1,3 @@
-card collection + wishlist
-    localstorage
-        loads card ids and then fetches from scryfall api
 
 
 deckbuilding

@@ -12,6 +12,7 @@ import ErrorPage from './routes/errorPage.jsx';
 import BrowseAllCards from './routes/browseallcards.jsx';
 import Collection from './routes/collection.jsx';
 import Wishlist from './routes/wishlist.jsx';
+import Deckbuilder from './routes/deckbuilder.jsx';
 
 const router = createBrowserRouter([
   {
@@ -31,6 +32,9 @@ const router = createBrowserRouter([
       },{
         path: "wishlist",
         element: <Wishlist />,
+      },{
+        path: "deckbuilder",
+        element: <Deckbuilder />,
       },
     ],
   },

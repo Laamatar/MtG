@@ -398,206 +398,204 @@ export default function Collection() {
 
 
     return (
-        <div>
-            <div>
-                <Offcanvas show={show} onHide={handleClose} placement="end">
-                    <Offcanvas.Header closeButton>
-                        <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
-                    </Offcanvas.Header>
-                    <Offcanvas.Body>
-                        <img src={selectedCard.img} width={"100%"} className="my-4"></img>
-                        <h4>{selectedCard.types}</h4>
+        <Container fluid>
+            <Offcanvas show={show} onHide={handleClose} placement="end">
+                <Offcanvas.Header closeButton>
+                    <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
+                </Offcanvas.Header>
+                <Offcanvas.Body>
+                    <img src={selectedCard.img} width={"100%"} className="my-4"></img>
+                    <h4>{selectedCard.types}</h4>
 
-                        {selectedCard.oracle.split(".").map(function (item, idx) {
-                            return (
-                                <span key={idx}>
-                                    {item + ". "}
-                                </span>
-                            )
-                        })
-                        }
+                    {selectedCard.oracle.split(".").map(function (item, idx) {
+                        return (
+                            <span key={idx}>
+                                {item + ". "}
+                            </span>
+                        )
+                    })
+                    }
 
-                        <h5 className="py-4">Price {selectedCard.price}€</h5>
+                    <h5 className="py-4">Price {selectedCard.price}€</h5>
 
 
-                        <ListGroup>
-                            <ListGroup.Item><a href={selectedCard.scryfall} target="_blank">Scryfall</a></ListGroup.Item>
-                            <ListGroup.Item><a href={selectedCard.gatherer} target="_blank">Gatherer</a></ListGroup.Item>
-                            <ListGroup.Item><a href={selectedCard.edhrec} target="_blank">EDHrec</a></ListGroup.Item>
-                            <ListGroup.Item><a href={selectedCard.tgcplayer} target="_blank">TGCPlayer</a></ListGroup.Item>
-                        </ListGroup>
-                        <Form onSubmit={removeFromCollection}>
-                            <Form.Control type="text" defaultValue={selectedCard.id} id="idselected" className="d-none" />
-                            <Container className="d-flex align-items-center justify-content-center mt-4">
-                                <Button variant="danger" type="submit">Remove from collection</Button>
-                            </Container>
-                        </Form>
-                    </Offcanvas.Body>
-                </Offcanvas>
-
-                <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
-                    <Row>
-                        <Container className="py-4 ps-4">
-                            <Button variant="secondary" onClick={refreshData} style={{ width: "15rem" }}>Reset filters and refresh cards</Button>
+                    <ListGroup>
+                        <ListGroup.Item><a href={selectedCard.scryfall} target="_blank">Scryfall</a></ListGroup.Item>
+                        <ListGroup.Item><a href={selectedCard.gatherer} target="_blank">Gatherer</a></ListGroup.Item>
+                        <ListGroup.Item><a href={selectedCard.edhrec} target="_blank">EDHrec</a></ListGroup.Item>
+                        <ListGroup.Item><a href={selectedCard.tgcplayer} target="_blank">TGCPlayer</a></ListGroup.Item>
+                    </ListGroup>
+                    <Form onSubmit={removeFromCollection}>
+                        <Form.Control type="text" defaultValue={selectedCard.id} id="idselected" className="d-none" />
+                        <Container className="d-flex align-items-center justify-content-center mt-4">
+                            <Button variant="danger" type="submit">Remove from collection</Button>
                         </Container>
-                        <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide filter options" : "Show filter options"}</Button>
-                        {showFilters
-                            ?
-                            <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
-                                <Col xs={12} className="pt-2">
-                                    <Form.Check
-                                        inline
-                                        label="White"
-                                        name="white"
-                                        type="checkbox"
-                                        value={searchData.white}
-                                        defaultChecked={searchData.white}
-                                        id={`inline-select-w`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Blue"
-                                        name="blue"
-                                        type="checkbox"
-                                        value={searchData.blue}
-                                        defaultChecked={searchData.blue}
-                                        id={`inline-select-u`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Black"
-                                        name="black"
-                                        type="checkbox"
-                                        value={searchData.black}
-                                        defaultChecked={searchData.black}
-                                        id={`inline-select-b`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Red"
-                                        name="red"
-                                        type="checkbox"
-                                        value={searchData.red}
-                                        defaultChecked={searchData.red}
-                                        id={`inline-select-r`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Green"
-                                        name="green"
-                                        type="checkbox"
-                                        value={searchData.green}
-                                        defaultChecked={searchData.green}
-                                        id={`inline-select-g`}
-                                    />
-                                </Col>
+                    </Form>
+                </Offcanvas.Body>
+            </Offcanvas>
 
-                                <Col className="pt-2" xs={12} sm={6} md={4} xl={2}>
-                                    <Form.Select aria-label="Default select example" name="typeselect" defaultValue={searchData.type}>
-                                        <option>Any card type</option>
-                                        <option value="Artifact">Artifact</option>
-                                        <option value="Enchantment">Enchantment</option>
-                                        <option value="Creature">Creature</option>
-                                        <option value="Instant">Instant</option>
-                                        <option value="Land">Land</option>
-                                        <option value="Legendary">Legendary</option>
-                                        <option value="Planeswalker">Planeswalker</option>
-                                        <option value="Sorcery">Sorcery</option>
-                                    </Form.Select>
-                                </Col>
+            <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
+                <Row>
+                    <Container className="py-4 ps-4">
+                        <Button variant="secondary" onClick={refreshData} style={{ width: "15rem" }}>Reset filters and refresh cards</Button>
+                    </Container>
+                    <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+                    {showFilters
+                        ?
+                        <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
+                            <Col xs={12} className="pt-2">
+                                <Form.Check
+                                    inline
+                                    label="White"
+                                    name="white"
+                                    type="checkbox"
+                                    value={searchData.white}
+                                    defaultChecked={searchData.white}
+                                    id={`inline-select-w`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Blue"
+                                    name="blue"
+                                    type="checkbox"
+                                    value={searchData.blue}
+                                    defaultChecked={searchData.blue}
+                                    id={`inline-select-u`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Black"
+                                    name="black"
+                                    type="checkbox"
+                                    value={searchData.black}
+                                    defaultChecked={searchData.black}
+                                    id={`inline-select-b`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Red"
+                                    name="red"
+                                    type="checkbox"
+                                    value={searchData.red}
+                                    defaultChecked={searchData.red}
+                                    id={`inline-select-r`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Green"
+                                    name="green"
+                                    type="checkbox"
+                                    value={searchData.green}
+                                    defaultChecked={searchData.green}
+                                    id={`inline-select-g`}
+                                />
+                            </Col>
 
-                                <Col xs={12} sm={8} md={6} xl={4} xxl={3} className="py-2">
+                            <Col className="pt-2" xs={12} sm={6} md={4} xl={2}>
+                                <Form.Select aria-label="Default select example" name="typeselect" defaultValue={searchData.type}>
+                                    <option>Any card type</option>
+                                    <option value="Artifact">Artifact</option>
+                                    <option value="Enchantment">Enchantment</option>
+                                    <option value="Creature">Creature</option>
+                                    <option value="Instant">Instant</option>
+                                    <option value="Land">Land</option>
+                                    <option value="Legendary">Legendary</option>
+                                    <option value="Planeswalker">Planeswalker</option>
+                                    <option value="Sorcery">Sorcery</option>
+                                </Form.Select>
+                            </Col>
 
-                                    <Form.Label htmlFor="search">Search by name</Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        id="search"
-                                        name="searchbar"
-                                        value={searchData.searchTerm}
-                                        onChange={e => setSearchData({ ...searchData, searchTerm: e.target.value })}
+                            <Col xs={12} sm={8} md={6} xl={4} xxl={3} className="py-2">
 
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Search from types instead"
-                                        type="checkbox"
-                                        name="typesearch"
-                                        value={searchData.searchFromTypes}
-                                        defaultChecked={searchData.searchFromTypes}
-                                        id={`inline-select-searchtype`}
-                                    />
-                                </Col>
-                                <Col>
-                                    <p>Legal in formats:</p>
-                                    <Form.Check
-                                        inline
-                                        label="Standard"
-                                        name="standard"
-                                        type="checkbox"
-                                        value={searchData.standard}
-                                        defaultChecked={searchData.standard}
-                                        id={`inline-select-standard`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Modern"
-                                        name="modern"
-                                        type="checkbox"
-                                        value={searchData.modern}
-                                        defaultChecked={searchData.modern}
-                                        id={`inline-select-modern`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Pauper"
-                                        name="pauper"
-                                        type="checkbox"
-                                        value={searchData.pauper}
-                                        defaultChecked={searchData.pauper}
-                                        id={`inline-select-pauper`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Commander"
-                                        name="commander"
-                                        type="checkbox"
-                                        value={searchData.commander}
-                                        defaultChecked={searchData.commander}
-                                        id={`inline-select-commander`}
-                                    />
-                                    <Form.Check
-                                        inline
-                                        label="Oathbreaker"
-                                        name="oathbreaker"
-                                        type="checkbox"
-                                        value={searchData.oathbreaker}
-                                        defaultChecked={searchData.oathbreaker}
-                                        id={`inline-select-oathbreaker`}
-                                    />
-                                </Col>
-                                <Col className="py-4" xs={12} sm={6} md={4} xl={2}>
-                                    <Button type="submit" variant="primary">Apply filters</Button>
-                                </Col>
-                            </Form>
+                                <Form.Label htmlFor="search">Search by name</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    id="search"
+                                    name="searchbar"
+                                    value={searchData.searchTerm}
+                                    onChange={e => setSearchData({ ...searchData, searchTerm: e.target.value })}
 
-                            :
-                            <div></div>
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Search from types instead"
+                                    type="checkbox"
+                                    name="typesearch"
+                                    value={searchData.searchFromTypes}
+                                    defaultChecked={searchData.searchFromTypes}
+                                    id={`inline-select-searchtype`}
+                                />
+                            </Col>
+                            <Col>
+                                <p>Legal in formats:</p>
+                                <Form.Check
+                                    inline
+                                    label="Standard"
+                                    name="standard"
+                                    type="checkbox"
+                                    value={searchData.standard}
+                                    defaultChecked={searchData.standard}
+                                    id={`inline-select-standard`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Modern"
+                                    name="modern"
+                                    type="checkbox"
+                                    value={searchData.modern}
+                                    defaultChecked={searchData.modern}
+                                    id={`inline-select-modern`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Pauper"
+                                    name="pauper"
+                                    type="checkbox"
+                                    value={searchData.pauper}
+                                    defaultChecked={searchData.pauper}
+                                    id={`inline-select-pauper`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Commander"
+                                    name="commander"
+                                    type="checkbox"
+                                    value={searchData.commander}
+                                    defaultChecked={searchData.commander}
+                                    id={`inline-select-commander`}
+                                />
+                                <Form.Check
+                                    inline
+                                    label="Oathbreaker"
+                                    name="oathbreaker"
+                                    type="checkbox"
+                                    value={searchData.oathbreaker}
+                                    defaultChecked={searchData.oathbreaker}
+                                    id={`inline-select-oathbreaker`}
+                                />
+                            </Col>
+                            <Col className="py-4" xs={12} sm={6} md={4} xl={2}>
+                                <Button type="submit" variant="primary">Apply filters</Button>
+                            </Col>
+                        </Form>
 
-                        }
-                    </Row>
-                </div>
-                {!loading
-                    ?
-                    <Row className="px-4 py-4">
-                        <div style={{ height: "8vh" }} />
-                        {error == "" ? <h4 className="pt-4">Found {filteredCards.length} cards {filteredCards.length >= 180 ? "(Loaded 180 cards)" : "(Loaded " + filteredCards.length + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
-                        <SomeCards handleClick={handleShow} cards={filteredCards} />
-                    </Row>
-                    :
-                    <div />
-                }
+                        :
+                        <div></div>
 
+                    }
+                </Row>
             </div>
-        </div>
+            {!loading
+                ?
+                <Row className="px-4 py-4">
+                    <div style={{ height: "8vh" }} />
+                    {error == "" ? <h4 className="pt-4">Found {filteredCards.length} cards {filteredCards.length >= 180 ? "(Loaded 180 cards)" : "(Loaded " + filteredCards.length + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
+                    <SomeCards handleClick={handleShow} cards={filteredCards} />
+                </Row>
+                :
+                <div />
+            }
+
+        </Container>
     )
 }
