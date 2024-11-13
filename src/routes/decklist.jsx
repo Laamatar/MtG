@@ -36,7 +36,6 @@ function Decklist(props) {
 
     }, [props.deck]);
 
-
     async function getData(id) {
 
         return await fetch("https://api.scryfall.com/cards/" + id)
@@ -57,12 +56,13 @@ function Decklist(props) {
     }
 
 
+    var addRemoveFunctionality = !props.fromDecks
 
     return (
         <div className="mt-4">
             <Row id="decklistRow">
                 {fetchedCards.map(function (card, i) {
-                    return <DeckItem card={card} cardamount={fd[i].amount} key={uniqid()}></DeckItem>
+                    return <DeckItem  card={card} addremove={addRemoveFunctionality} cardamount={fd[i].amount} key={uniqid()} removeCard={props.removeCard} addCard={props.addCard}></DeckItem>
                 }
                 )}
             </Row>

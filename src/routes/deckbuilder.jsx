@@ -246,7 +246,10 @@ export default function Deckbuilder() {
             name: deckname,
             decklist: deck
         }
-        const decksInLS = JSON.parse(localStorage.getItem("decks"))
+        var decksInLS = JSON.parse(localStorage.getItem("decks"))
+        if(decksInLS == undefined){
+            decksInLS = []
+        }
         for(let i = 0; i<decksInLS.length; i++){
             if(decksInLS[i].name == deckname){
                 console.log("alert, name already in use")
@@ -259,6 +262,15 @@ export default function Deckbuilder() {
     }
 
     const [deckname, setDeckname] = useState("")
+
+
+    function removeCardByID(id){
+        console.log(id)
+    }
+
+    function addCardByID(id){
+        console.log(id)
+    }
 
     return (
         <DndContext onDragEnd={handleDragEnd}>
@@ -301,7 +313,7 @@ export default function Deckbuilder() {
                                         </Col>
                                     </Row>
                                 </Form>
-                                <Decklist deck={deck}></Decklist>
+                                <Decklist deck={deck} fromDecks={false} removeCard={removeCardByID} addCard={addCardByID}></Decklist>
                             </Container>
                         </Droppable>
                     </Col>
@@ -312,13 +324,12 @@ export default function Deckbuilder() {
 
 
 
-            <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
-                <Row>
-                    <h4 className="pt-4 ps-4">Filter cards:</h4>
-                    <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide options" : "Show options"}</Button>
+            <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
+                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{width: "100%"}}>
+                    <Button variant="outline-secondary" onClick={toggleShowFilters} style={{width: "100%"}} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
                     {showFilters
                         ?
-                        <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
+                        <Form className="px-4 pt-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
                             <Col xs={12} className="pt-2">
                                 <Form.Check
                                     inline

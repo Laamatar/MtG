@@ -139,6 +139,9 @@ export default function Wishlist() {
 
     useEffect(() => {
         var wl = JSON.parse(localStorage.getItem("wishlist"))
+        if (JSON.parse(localStorage.getItem("wishlist")) == undefined) {
+            wl = []
+        }
         setWishlist(wl);
         console.log(wishlist)
         fetchData(true)
@@ -154,14 +157,16 @@ export default function Wishlist() {
 
     async function fetchData() {
         var promises = [];
-        for (let i = 0; i < JSON.parse(localStorage.getItem("wishlist")).length; i++) {
-            console.log(i)
-            promises.push(getData(JSON.parse(localStorage.getItem("wishlist"))[i]));
+        if (JSON.parse(localStorage.getItem("collection")) != undefined) {
+            for (let i = 0; i < JSON.parse(localStorage.getItem("wishlist")).length; i++) {
+                console.log(i)
+                promises.push(getData(JSON.parse(localStorage.getItem("wishlist"))[i]));
+            }
+            setLoading(true)
+            await Promise.all(promises).then(results => setCards(results)).then(
+                setLoading(false)
+            );
         }
-        setLoading(true)
-        await Promise.all(promises).then(results => setCards(results)).then(
-            setLoading(false)
-        );
     }
 
     async function getData(id) {
@@ -394,7 +399,7 @@ export default function Wishlist() {
 
 
     return (
-        <Container fluid>
+        <div className="d-flex">
             <Offcanvas show={show} onHide={handleClose} placement="end">
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
@@ -430,13 +435,14 @@ export default function Wishlist() {
                 </Offcanvas.Body>
             </Offcanvas>
 
-            <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
-                <Row>
-
-                    <Container className="py-4 ps-4">
+            <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
+                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{ width: "100%" }}>
+                    <Container className="ps-4">
                         <Button variant="secondary" onClick={refreshData} style={{ width: "15rem" }}>Reset filters and refresh cards</Button>
                     </Container>
-                    <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+
+                    <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+
                     {showFilters
                         ?
                         <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
@@ -593,6 +599,6 @@ export default function Wishlist() {
                 <div />
             }
 
-        </Container>
+        </div>
     )
 }

@@ -8,6 +8,14 @@ import noimage from "../assets/noimage.png";
 function DeckItem(props) {
 
 
+    function handleRemove(e, id){
+        props.removeCard(id)
+    }
+
+    function handleAdd(e, id){
+        props.addCard(id)
+    }
+
     var imageuri;
     try {
         imageuri = props.card.image_uris.normal
@@ -39,10 +47,13 @@ function DeckItem(props) {
 
             <ListGroup.Item className="ps-2 py-2 border align-content-center justify-content-center" >
                 <Row>
-                    <Col xs={4}>{props.card.name}</Col>
-                    <Col xs={2}>{props.card.mana_cost}</Col>
-                    <Col xs={4}>{tl}</Col>
-                    <Col xs={2}>{props.cardamount}</Col>
+                    {props.addremove ? <Col xs={3}>{props.card.name}</Col> : <Col xs={4}>{props.card.name}</Col>}
+                    {props.addremove ? <Col xs={2}>{props.card.mana_cost}</Col> : <Col xs={3}>{props.card.mana_cost}</Col>}
+                    {props.addremove ? <Col xs={3}>{tl}</Col> : <Col xs={4}>{tl}</Col>}
+                    {props.addremove ? <Col xs={1}>{props.cardamount}</Col> : <Col xs={1}>{props.cardamount}</Col>}
+                    
+                    
+                    {props.addremove ? <Col xs={3}> <Button onClick={(e) => handleRemove(e, props.card.id)} variant="outline-danger" className="me-1" style={{width: "2.4rem"}}>-</Button><Button onClick={(e) => handleAdd(e, props.card.id)} variant="outline-success" style={{width: "2.4rem"}}>+</Button></Col> : <div/>}
                 </Row>
             </ListGroup.Item>
         </OverlayTrigger>

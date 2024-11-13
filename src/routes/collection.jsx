@@ -139,6 +139,9 @@ export default function Collection() {
 
     useEffect(() => {
         var col = JSON.parse(localStorage.getItem("collection"))
+        if (col == undefined) {
+            col = []
+        }
         setCollection(col);
         console.log(collection)
         fetchData()
@@ -154,12 +157,14 @@ export default function Collection() {
 
     async function fetchData() {
         var promises = [];
-        for (let i = 0; i < JSON.parse(localStorage.getItem("collection")).length; i++) {
-            console.log(i)
-            promises.push(getData(JSON.parse(localStorage.getItem("collection"))[i]));
+        if (JSON.parse(localStorage.getItem("collection")) != undefined) {
+            for (let i = 0; i < JSON.parse(localStorage.getItem("collection")).length; i++) {
+                console.log(i)
+                promises.push(getData(JSON.parse(localStorage.getItem("collection"))[i]));
+            }
+            setLoading(true)
+            await Promise.all(promises).then(results => setCards(results)).then(setLoading(false));
         }
-        setLoading(true)
-        await Promise.all(promises).then(results => setCards(results)).then(setLoading(false));
     }
 
     async function getData(id) {
@@ -398,7 +403,7 @@ export default function Collection() {
 
 
     return (
-        <Container fluid>
+        <div className="d-flex">
             <Offcanvas show={show} onHide={handleClose} placement="end">
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
@@ -434,15 +439,17 @@ export default function Collection() {
                 </Offcanvas.Body>
             </Offcanvas>
 
-            <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
-                <Row>
-                    <Container className="py-4 ps-4">
+            <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
+                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{width: "100%"}}>
+                    <Container className="ps-4">
                         <Button variant="secondary" onClick={refreshData} style={{ width: "15rem" }}>Reset filters and refresh cards</Button>
                     </Container>
-                    <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+                    
+                        <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+                    
                     {showFilters
                         ?
-                        <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
+                        <Form className="px-4 pt-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
                             <Col xs={12} className="pt-2">
                                 <Form.Check
                                     inline
@@ -596,6 +603,6 @@ export default function Collection() {
                 <div />
             }
 
-        </Container>
+        </div>
     )
 }

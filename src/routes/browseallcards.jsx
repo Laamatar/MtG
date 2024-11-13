@@ -324,7 +324,7 @@ export default function BrowseAllCards() {
 
 
     return (
-        <Container fluid>
+        <div className="d-flex">
             <Offcanvas show={show} onHide={handleClose} placement="end">
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
@@ -372,10 +372,9 @@ export default function BrowseAllCards() {
                 </Offcanvas.Body>
             </Offcanvas>
 
-            <div style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
-                <Row>
-                    <h4 className="pt-4 ps-4">Filter cards:</h4>
-                    <Button variant="outline-secondary" onClick={toggleShowFilters} >{showFilters ? "Hide options" : "Show options"}</Button>
+            <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
+                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{ width: "100%" }}>
+                    <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
                     {showFilters
                         ?
                         <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
@@ -542,6 +541,6 @@ export default function BrowseAllCards() {
                 <div />
             }
 
-        </Container>
+        </div>
     )
 }

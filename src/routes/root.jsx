@@ -6,7 +6,7 @@ import { Outlet, Link } from "react-router-dom";
 export default function Root() {
   return (
     <>
-      <Container fluid>
+      <div className="d-flex">
         <Navbar expand="lg" className="bg-body-tertiary fixed-top">
           <Container>
             <Navbar.Brand>
@@ -40,7 +40,7 @@ export default function Root() {
         <div className="mt-5 d-flex">
           <Outlet />
         </div>
-      </Container>
+      </div>
     </>
   );
 }

@@ -10,7 +10,7 @@ export default function Decks() {
     const [loading, setLoading] = useState(true)
     const [show, setShow] = useState(true)
 
-    
+
     const handleClose = () => setShow(false);
 
     useEffect(() => {
@@ -19,8 +19,9 @@ export default function Decks() {
         var decksInLS = JSON.parse(localStorage.getItem("decks"))
         setCurrentDeck(0)
         setLoading(false)
-        console.log(JSON.parse(localStorage.getItem("decks"))[currentDeck].decklist)
-
+        if (JSON.parse(localStorage.getItem("decks") != undefined)) {
+            console.log(JSON.parse(localStorage.getItem("decks"))[currentDeck].decklist)
+        }
 
         // if(JSON.parse(localStorage.getItem("decktoedit")).name == ""){
         //     //do stuff
@@ -47,7 +48,7 @@ export default function Decks() {
                 <Row className='align-content-center justify-content-center text-center'>
                     <Col xs={12} sm={5} md={4} xl={3} xxl={2} className='border rounded'>
                         <h6 className='my-4'>Decks:</h6>
-                        {JSON.parse(localStorage.getItem("decks")).map(function (deck, i) {
+                        {JSON.parse(localStorage.getItem("decks")) != undefined ? JSON.parse(localStorage.getItem("decks")).map(function (deck, i) {
                             return (
                                 <Form onSubmit={handleSubmit} key={uniqid()}>
                                     <Form.Control
@@ -67,23 +68,30 @@ export default function Decks() {
                                     </Container>
                                 </Form>
                             )
-                        })}
+                        }) : console.log("")}
                     </Col>
+                    
+                    {JSON.parse(localStorage.getItem("decks")) != undefined
+                            ? 
                     <Col className='border rounded mx-2'>
+
                         <h6 className='my-4'>Deck: {JSON.parse(localStorage.getItem("decks"))[currentDeck].name} </h6>
-                        <h6 className='my-4'>Decklist:</h6>
-                        <ListGroup>
-                            <Decklist deck={JSON.parse(localStorage.getItem("decks"))[currentDeck].decklist}></Decklist>
+                        <h6 className='my-4'>Cards:</h6>
+                        <ListGroup className='mb-4'>
+                           {JSON.parse(localStorage.getItem("decks")) != undefined ? <Decklist fromDecks={true} deck={JSON.parse(localStorage.getItem("decks"))[currentDeck].decklist}></Decklist> : <div/> } 
 
                         </ListGroup>
                         <Row className='align-content-center justify-content-center text-center'>
-                            <Button className='my-2' variant='outline-primary' style={{ width: "40%" }}>Get decklist</Button>
+                            <Button className='mt-4 ' variant='outline-primary' style={{ width: "40%" }}>Show decklist</Button>
                         </Row>
                         <Row className='align-content-center justify-content-end text-center'>
 
                             <Button className='my-4 me-4' variant='danger' style={{ width: "7rem" }}>Delete deck</Button>
                         </Row>
+                            
                     </Col>
+                    : <div />
+                }
                 </Row>
             }
 
@@ -93,12 +101,12 @@ export default function Decks() {
                 </Offcanvas.Header>
                 <Offcanvas.Body>
                     <pre>
-                        {JSON.parse(localStorage.getItem("decks"))[currentDeck].name}
-                        
-                        <br/>
-                        <br/>
+                        {/* {JSON.parse(localStorage.getItem("decks"))[currentDeck].name} */}
+
+                        <br />
+                        <br />
                         asd x 1
-                        <br/>
+                        <br />
                         gdföglm x 2
                     </pre>
                 </Offcanvas.Body>
