@@ -1,5 +1,5 @@
 import AllCards from "./allcards"
-import { Row, Col, Button, Form, Offcanvas, ListGroup, Container } from "react-bootstrap"
+import { Row, Col, Button, Form, Offcanvas, ListGroup, Alert } from "react-bootstrap"
 import placeholder from "../assets/placeholder.png";
 import { useState, useEffect } from "react";
 
@@ -142,8 +142,6 @@ export default function BrowseAllCards() {
 
     function addToLocalStorage(name, value) {
         localStorage.setItem(name, JSON.stringify(value))
-        console.log(JSON.parse(localStorage.getItem(name)))
-        console.log("add to local storage : " + name)
 
     }
 
@@ -152,53 +150,67 @@ export default function BrowseAllCards() {
         e.preventDefault();
         var col = JSON.parse(localStorage.getItem("collection"))
         var id = e.target.elements.idOfSelectedCardC.value;
+        if (col == undefined) {
+            col = []
+        }
         if (col.length != 0) {
             if (!col.includes(id)) {
-                console.log(id)
                 col.push(id)
                 addToLocalStorage("collection", col)
             }
         } else {
-            console.log(id)
             col.push(id)
             addToLocalStorage("collection", col)
         }
+        setVariant("success")
+        setAlertmsg("Card added to collection!")
+        setShowA(true)
     }
+
 
     async function addToWishlist(e) {
         e.preventDefault();
         var wl = JSON.parse(localStorage.getItem("wishlist"))
         var id = e.target.elements.idOfSelectedCardWL.value;
+        if (wl == undefined) {
+            wl = []
+        }
         if (wl.length != 0) {
             if (!wl.includes(id)) {
-                console.log(id)
                 wl.push(id)
                 addToLocalStorage("wishlist", wl)
             }
         } else {
-            console.log(id)
             wl.push(id)
             addToLocalStorage("wishlist", wl)
         }
+        setVariant("success")
+        setAlertmsg("Card added to wishlist!")
+        setShowA(true)
+
     }
 
     const getData = async () => {
         setLoading(true);
-        console.log("fetching data...")
         fetch("https://api.scryfall.com/cards/" + APIsearch)
             .then(response => response.json())
             .then(result => {
                 if (result.object == "error") {
-                    console.log(result.code)
-                    console.log(result.details)
+
+                    setVariant("danger")
+                    setAlertmsg("No cards found!")
+                    setShowA(true)
                     setCardsFound(0);
                     setError("No cards found.")
                     setLoading(false)
                 } else {
                     setError("")
-                    console.log(result)
                     setCardsFound(result.total_cards)
                     setCards(result)
+
+                    setVariant("success")
+                    setAlertmsg(result.total_cards + " cards found!")
+                    setShowA(true)
                     setLoading(false)
                 }
             });
@@ -213,7 +225,6 @@ export default function BrowseAllCards() {
     function handleChange(e) {
         var key = e.target.name;
         if (key == "white" || key == "blue" || key == "black" || key == "red" || key == "green") {
-            console.log("toggle color: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -222,7 +233,6 @@ export default function BrowseAllCards() {
             }
             setSearchData({ ...searchData, [key]: value })
         } else if (key == "colorexcl") {
-            console.log("toggle color exclusivity")
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -231,12 +241,10 @@ export default function BrowseAllCards() {
             }
             setSearchData({ ...searchData, exclusivecolors: value })
         } else if (key == "typeselect") {
-            console.log("change type to " + e.target.value)
             var value = e.target.value;
             setSearchData({ ...searchData, type: value })
         } else if (key == "searchbar") {
         } else if (key == "typesearch") {
-            console.log("toggle searching from types")
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -245,7 +253,6 @@ export default function BrowseAllCards() {
             }
             setSearchData({ ...searchData, searchFromTypes: value })
         } else if (key == "standard" || key == "modern" || key == "pauper" || key == "commander" || key == "oathbreaker") {
-            console.log("toggle format: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -259,8 +266,8 @@ export default function BrowseAllCards() {
 
     function handleSearchSubmit(e) {
         e.preventDefault();
-        console.log("filter applied!");
-        console.log(searchData);
+
+        setShowA(false)
         var searchquery = "";
         var colors = "";
         var colorsquery = "";
@@ -316,11 +323,13 @@ export default function BrowseAllCards() {
             format = format + "+legal=oathbreaker";
         }
         searchquery = "search?q=" + colorsquery + format + type + search + "+lang=english+game=paper";
-        console.log(searchquery);
         setAPIsearch(searchquery);
 
     }
 
+    const [variant, setVariant] = useState("success")
+    const [alertmsg, setAlertmsg] = useState("Error!")
+    const [showA, setShowA] = useState(false);
 
 
     return (
@@ -529,6 +538,9 @@ export default function BrowseAllCards() {
 
                     }
                 </Row>
+                <Alert variant={variant} style={{ position: "fixed", top: "10rem"}} onClose={() => setShowA(false)} dismissible show={showA}>
+                    {alertmsg}
+                </Alert>
             </div>
             {!loading
                 ?

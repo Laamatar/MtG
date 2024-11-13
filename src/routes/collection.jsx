@@ -1,5 +1,5 @@
 import SomeCards from "./specificcards"
-import { Row, Col, Button, Form, Offcanvas, ListGroup, Container } from "react-bootstrap"
+import { Row, Col, Button, Form, Offcanvas, ListGroup, Container, Alert } from "react-bootstrap"
 import placeholder from "../assets/placeholder.png";
 import { useState, useEffect } from "react";
 
@@ -143,14 +143,15 @@ export default function Collection() {
             col = []
         }
         setCollection(col);
-        console.log(collection)
         fetchData()
         setFilteredCards(cards)
 
     }, []);
 
     function refreshData() {
-        console.log(cards)
+        setVariant("success")
+        setAlertmsg("Refreshed cards!")
+        setShowA(true)
         setFilteredCards(cards)
     }
 
@@ -159,11 +160,12 @@ export default function Collection() {
         var promises = [];
         if (JSON.parse(localStorage.getItem("collection")) != undefined) {
             for (let i = 0; i < JSON.parse(localStorage.getItem("collection")).length; i++) {
-                console.log(i)
                 promises.push(getData(JSON.parse(localStorage.getItem("collection"))[i]));
             }
             setLoading(true)
-            await Promise.all(promises).then(results => setCards(results)).then(setLoading(false));
+            await Promise.all(promises).then(results => {
+                setCards(results)
+            }).then(setLoading(false));
         }
     }
 
@@ -173,12 +175,15 @@ export default function Collection() {
             .then(response => response.json())
             .then(result => {
                 if (result.object == "error") {
-                    console.log(result.code)
-                    console.log(result.details)
+                    setVariant("danger")
+                    setAlertmsg("No cards found!")
+                    setShowA(true)
                     setError("No cards found.")
                 } else {
                     setError("");
-                    console.log(result)
+                    setVariant("success")
+                    setAlertmsg("Loaded cards!")
+                    setShowA(true)
                     return (result)
                 }
             });
@@ -191,7 +196,6 @@ export default function Collection() {
     function handleChange(e) {
         var key = e.target.name;
         if (key == "white" || key == "blue" || key == "black" || key == "red" || key == "green") {
-            console.log("toggle color: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -201,12 +205,10 @@ export default function Collection() {
             setSearchData({ ...searchData, [key]: value })
 
         } else if (key == "typeselect") {
-            console.log("change type to " + e.target.value)
             var value = e.target.value;
             setSearchData({ ...searchData, type: value })
         } else if (key == "searchbar") {
         } else if (key == "typesearch") {
-            console.log("toggle searching from types")
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -215,7 +217,6 @@ export default function Collection() {
             }
             setSearchData({ ...searchData, searchFromTypes: value })
         } else if (key == "standard" || key == "modern" || key == "pauper" || key == "commander" || key == "oathbreaker") {
-            console.log("toggle format: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -229,8 +230,7 @@ export default function Collection() {
 
     function handleSearchSubmit(e) {
         e.preventDefault();
-        console.log("filter applied!");
-        console.log(cards);
+        setShowA(false)
         var colorfiltered = []
         var filtered = []
 
@@ -381,8 +381,6 @@ export default function Collection() {
 
     function addToLocalStorage(name, value) {
         localStorage.setItem(name, JSON.stringify(value))
-        console.log(JSON.parse(localStorage.getItem(name)))
-        console.log("add to local storage : " + name)
         fetchData()
 
     }
@@ -392,14 +390,20 @@ export default function Collection() {
         var col = JSON.parse(localStorage.getItem("collection"))
         var id = e.target.elements.idselected.value;
         if (col.includes(id)) {
-            console.log(id)
             col.splice(col.indexOf(id), 1);
             addToLocalStorage("collection", col)
             refreshData()
         }
+        
+        setVariant("danger")
+        setAlertmsg("Removed card from collection!")
+        setShowA(true)
 
     }
 
+    const [variant, setVariant] = useState("success")
+    const [alertmsg, setAlertmsg] = useState("Error!")
+    const [showA, setShowA] = useState(false);
 
 
     return (
@@ -440,13 +444,13 @@ export default function Collection() {
             </Offcanvas>
 
             <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
-                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{width: "100%"}}>
+                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{ width: "100%" }}>
                     <Container className="ps-4">
                         <Button variant="secondary" onClick={refreshData} style={{ width: "15rem" }}>Reset filters and refresh cards</Button>
                     </Container>
-                    
-                        <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
-                    
+
+                    <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+
                     {showFilters
                         ?
                         <Form className="px-4 pt-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
@@ -591,6 +595,10 @@ export default function Collection() {
 
                     }
                 </Row>
+
+                <Alert variant={variant} style={{ position: "fixed", top: "4rem" }} onClose={() => setShowA(false)} dismissible show={showA}>
+                    {alertmsg}
+                </Alert>
             </div>
             {!loading
                 ?

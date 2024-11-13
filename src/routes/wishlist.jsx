@@ -1,5 +1,5 @@
 import SomeCards from "./specificcards"
-import { Row, Col, Button, Form, Offcanvas, ListGroup, Container } from "react-bootstrap"
+import { Row, Col, Button, Form, Offcanvas, ListGroup, Container, Alert } from "react-bootstrap"
 import placeholder from "../assets/placeholder.png";
 import { useState, useEffect } from "react";
 
@@ -143,23 +143,23 @@ export default function Wishlist() {
             wl = []
         }
         setWishlist(wl);
-        console.log(wishlist)
         fetchData(true)
 
     }, []);
 
     function refreshData() {
-        console.log(cards)
         setFilteredCards(cards)
+        setVariant("success")
+        setAlertmsg("Refreshed cards!")
+        setShowA(true)
     }
 
 
 
     async function fetchData() {
         var promises = [];
-        if (JSON.parse(localStorage.getItem("collection")) != undefined) {
+        if (JSON.parse(localStorage.getItem("wishlist")) != undefined) {
             for (let i = 0; i < JSON.parse(localStorage.getItem("wishlist")).length; i++) {
-                console.log(i)
                 promises.push(getData(JSON.parse(localStorage.getItem("wishlist"))[i]));
             }
             setLoading(true)
@@ -175,12 +175,15 @@ export default function Wishlist() {
             .then(response => response.json())
             .then(result => {
                 if (result.object == "error") {
-                    console.log(result.code)
-                    console.log(result.details)
                     setError("No cards found.")
+                    setVariant("danger")
+                    setAlertmsg("No cards found!")
+                    setShowA(true)
                 } else {
                     setError("");
-                    console.log(result)
+                    setVariant("success")
+                    setAlertmsg("Cards loaded!")
+                    setShowA(true)
                     return (result)
                 }
             });
@@ -193,7 +196,6 @@ export default function Wishlist() {
     function handleChange(e) {
         var key = e.target.name;
         if (key == "white" || key == "blue" || key == "black" || key == "red" || key == "green") {
-            console.log("toggle color: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -203,12 +205,10 @@ export default function Wishlist() {
             setSearchData({ ...searchData, [key]: value })
 
         } else if (key == "typeselect") {
-            console.log("change type to " + e.target.value)
             var value = e.target.value;
             setSearchData({ ...searchData, type: value })
         } else if (key == "searchbar") {
         } else if (key == "typesearch") {
-            console.log("toggle searching from types")
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -217,7 +217,6 @@ export default function Wishlist() {
             }
             setSearchData({ ...searchData, searchFromTypes: value })
         } else if (key == "standard" || key == "modern" || key == "pauper" || key == "commander" || key == "oathbreaker") {
-            console.log("toggle format: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -231,8 +230,7 @@ export default function Wishlist() {
 
     function handleSearchSubmit(e) {
         e.preventDefault();
-        console.log("filter applied!");
-        console.log(cards);
+        setShowA(false)
         var colorfiltered = []
         var filtered = []
 
@@ -378,8 +376,6 @@ export default function Wishlist() {
 
     function addToLocalStorage(name, value) {
         localStorage.setItem(name, JSON.stringify(value))
-        console.log(JSON.parse(localStorage.getItem(name)))
-        console.log("add to local storage : " + name)
         fetchData()
 
     }
@@ -389,12 +385,18 @@ export default function Wishlist() {
         var wl = JSON.parse(localStorage.getItem("wishlist"))
         var id = e.target.elements.idselected.value;
         if (wl.includes(id)) {
-            console.log(id)
             wl.splice(wl.indexOf(id), 1);
             addToLocalStorage("wishlist", wl)
         }
 
+        setVariant("danger")
+        setAlertmsg("Removed card from wishlist!")
+        setShowA(true)
     }
+
+    const [variant, setVariant] = useState("success")
+    const [alertmsg, setAlertmsg] = useState("Error!")
+    const [showA, setShowA] = useState(false);
 
 
 
@@ -587,6 +589,10 @@ export default function Wishlist() {
 
                     }
                 </Row>
+
+                <Alert variant={variant} style={{ position: "fixed", top: "4rem" }} onClose={() => setShowA(false)} dismissible show={showA}>
+                    {alertmsg}
+                </Alert>
             </div>
             {!loading
                 ?

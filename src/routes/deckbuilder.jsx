@@ -5,7 +5,7 @@ import AllCardsDrop from './allcardsdraggable';
 import { Draggable } from './draggable';
 import { Droppable } from './droppable';
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Offcanvas, ListGroup, Button, OverlayTrigger, Popover, ListGroupItem, FormControl } from 'react-bootstrap';
+import { Container, Row, Col, Form, Offcanvas, ListGroup, Button, Alert, Popover, ListGroupItem, FormControl } from 'react-bootstrap';
 import Decklist from './decklist';
 
 export default function Deckbuilder() {
@@ -48,12 +48,14 @@ export default function Deckbuilder() {
 
     })
 
+
+    const [showA, setShowA] = useState(false);
+
     const [APIsearch, setAPIsearch] = useState("search?q=lang=en+legal=standard");
     const [cards, setCards] = useState();
     const [error, setError] = useState("");
     const [defaultName, setDefaultName] = useState("New Deck");
 
-    const handleClose = () => setShow(false);
 
     function handleShow(e) {
         e.preventDefault();
@@ -69,15 +71,6 @@ export default function Deckbuilder() {
         }
     }
 
-    function addToLocalStorage(name, value) {
-        localStorage.setItem(name, JSON.stringify(value))
-        console.log(JSON.parse(localStorage.getItem(name)))
-        console.log("add to local storage : " + name)
-
-    }
-
-
-
     const getData = async () => {
         setLoading(true);
         console.log("fetching data...")
@@ -85,14 +78,17 @@ export default function Deckbuilder() {
             .then(response => response.json())
             .then(result => {
                 if (result.object == "error") {
-                    console.log(result.code)
-                    console.log(result.details)
                     setCardsFound(0);
                     setError("No cards found.")
+                    setVariant("danger")
+                    setAlertmsg("No cards found!")
+                    setShowA(true)
                     setLoading(false)
                 } else {
                     setError("")
-                    console.log(result)
+                    setVariant("success")
+                    setAlertmsg(result.total_cards + " cards found!")
+                    setShowA(true)
                     setCardsFound(result.total_cards)
                     setCards(result)
                     setLoading(false)
@@ -102,25 +98,30 @@ export default function Deckbuilder() {
 
     useEffect(() => {
         getData();
-        var d = JSON.parse(localStorage.getItem("decktoedit")) ;
-        console.log(d.name)
+        var d = JSON.parse(localStorage.getItem("decktoedit"));
 
 
+        if (d == undefined) {
+
+        } else {
             if (d.name != "") {
+                setVariant("primary")
+                setAlertmsg("Loaded deck " + d.name + ".")
+                setShowA(true)
                 setDefaultName(d.name)
                 setDeck(d.decklist)
-                localStorage.setItem("decktoedit", JSON.stringify({name: "", deck: ""}))
+                localStorage.setItem("decktoedit", JSON.stringify({ name: "", deck: "" }))
             }
-        
 
 
+        }
     }, []);
 
 
     function handleChange(e) {
+        setShowA(false)
         var key = e.target.name;
         if (key == "white" || key == "blue" || key == "black" || key == "red" || key == "green") {
-            console.log("toggle color: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -129,7 +130,6 @@ export default function Deckbuilder() {
             }
             setSearchData({ ...searchData, [key]: value })
         } else if (key == "colorexcl") {
-            console.log("toggle color exclusivity")
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -138,12 +138,10 @@ export default function Deckbuilder() {
             }
             setSearchData({ ...searchData, exclusivecolors: value })
         } else if (key == "typeselect") {
-            console.log("change type to " + e.target.value)
             var value = e.target.value;
             setSearchData({ ...searchData, type: value })
         } else if (key == "searchbar") {
         } else if (key == "typesearch") {
-            console.log("toggle searching from types")
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -152,7 +150,6 @@ export default function Deckbuilder() {
             }
             setSearchData({ ...searchData, searchFromTypes: value })
         } else if (key == "standard" || key == "modern" || key == "pauper" || key == "commander" || key == "oathbreaker") {
-            console.log("toggle format: " + e.target.name)
             var value;
             if (e.target.value == "true") {
                 value = false;
@@ -166,8 +163,8 @@ export default function Deckbuilder() {
 
     function handleSearchSubmit(e) {
         e.preventDefault();
-        console.log("filter applied!");
-        console.log(searchData);
+
+        setShowA(false)
         var searchquery = "";
         var colors = "";
         var colorsquery = "";
@@ -223,15 +220,14 @@ export default function Deckbuilder() {
             format = format + "+legal=oathbreaker";
         }
         searchquery = "search?q=" + colorsquery + format + type + search + "+lang=english+game=paper";
-        console.log(searchquery);
         setAPIsearch(searchquery);
         getData();
 
     }
 
     function saveDeck(e) {
+        setShowA(false)
         e.preventDefault();
-        console.log(deckname)
         var deckdata = {
             name: deckname,
             decklist: deck
@@ -242,12 +238,15 @@ export default function Deckbuilder() {
         }
         for (let i = 0; i < decksInLS.length; i++) {
             if (decksInLS[i].name == deckname) {
-                console.log("alert, name already in use")
-                console.log("message box, use " + deckname + " (copy) instead, y/n")
+                setVariant("danger")
+                setAlertmsg("Name is already used. Please use another name.")
+                setShowA(true)
                 return
             }
         }
-
+        setVariant("success")
+        setAlertmsg("Deck " + deckname + " saved successfully!")
+        setShowA(true)
         localStorage.setItem("decks", JSON.stringify([...decksInLS, deckdata]))
     }
 
@@ -255,7 +254,6 @@ export default function Deckbuilder() {
 
 
     function removeCardByID(id) {
-        console.log(id)
 
         var newdeck = [];
         for (let i = 0; i < deck.length; i++) {
@@ -274,14 +272,13 @@ export default function Deckbuilder() {
     }
 
     function addCardByID(id) {
-        console.log("added card (" + id + ") to deck")
+
         var indeck = false;
         var newdeck = [];
         for (let i = 0; i < deck.length; i++) {
             if (deck[i].id == id) {
                 var newamount = deck[i].amount + 1;
                 indeck = true;
-                console.log("already in deck")
                 newdeck.push({ id: deck[i].id, amount: newamount })
 
             } else {
@@ -291,11 +288,13 @@ export default function Deckbuilder() {
 
         if (!indeck) {
             setDeck([...deck, { id: id, amount: 1 }])
-            console.log("added to deck")
         } else {
             setDeck(newdeck)
         }
     }
+
+    const [variant, setVariant] = useState("success")
+    const [alertmsg, setAlertmsg] = useState("Error!")
 
     return (
         <DndContext onDragEnd={handleDragEnd}>
@@ -508,8 +507,13 @@ export default function Deckbuilder() {
                 </Row>
             </div>
 
+            <Alert variant={variant} style={{ position: "fixed", top: "10rem", right: "5rem" }} onClose={() => setShowA(false)} dismissible show={showA}>
+                {alertmsg}
+            </Alert>
+
         </DndContext >
     );
+
 
     function handleDragEnd(event) {
         console.log(deck)

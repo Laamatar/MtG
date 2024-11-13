@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Offcanvas, ListGroup, Button, OverlayTrigger, Popover, ListGroupItem, FormControl } from 'react-bootstrap';
+import { Container, Row, Col, Form, Offcanvas, ListGroup, Button, Alert, Popover, ListGroupItem, FormControl } from 'react-bootstrap';
 import Decklist from './decklist';
 import uniqid from "uniqid"
 import { PieChart } from 'react-minimal-pie-chart';
@@ -48,7 +48,6 @@ export default function Decks() {
             setLoading(true)
             await Promise.all(promises).then(results => {
 
-                console.log("index")
                 var w = 0;
                 var u = 0;
                 var b = 0;
@@ -96,6 +95,9 @@ export default function Decks() {
                 setColors({ w: w, u: u, b: b, r: r, g: g, c: c })
                 setTypes({ l: l, c: typec, i: i, s: s, o: o })
                 setCardNames(cn)
+                setVariant("success")
+                setAlertmsg("Loaded deck " + JSON.parse(localStorage.getItem("decks"))[currentDeck].name)
+                setShowA(true)
             }
             ).then(setLoading(false));
         }
@@ -107,12 +109,7 @@ export default function Decks() {
             .then(response => response.json())
             .then(result => {
                 if (result.object == "error") {
-                    console.log(result.code)
-                    console.log(result.details)
                 } else {
-
-                    console.log(result)
-
                     return (result)
                 }
             });
@@ -136,15 +133,15 @@ export default function Decks() {
 
     async function editDeck() {
         var d = JSON.parse(localStorage.getItem("decks"))[currentDeck];
-        console.log(d)
         localStorage.setItem("decktoedit", JSON.stringify(d))
-        console.log(JSON.parse(localStorage.getItem("decktoedit")))
         navigate("/deckbuilder")
     }
 
 
     function deleteDeck() {
         var newDecks = [];
+        
+        setAlertmsg("Deck " + JSON.parse(localStorage.getItem("decks"))[currentDeck].name + " deleted!")
         for (let index = 0; index < JSON.parse(localStorage.getItem("decks")).length; index++) {
             if (index != currentDeck) {
                 newDecks.push(JSON.parse(localStorage.getItem("decks"))[index])
@@ -159,13 +156,22 @@ export default function Decks() {
 
             localStorage.setItem("decks", JSON.stringify([]))
         }
+        setVariant("danger")
+        setShowA(true)
     }
 
+    const [variant, setVariant] = useState("success")
+    const [alertmsg, setAlertmsg] = useState("Error!")
+    const [showA, setShowA] = useState(false);
 
     const [hoveredColor, setHoveredColor] = useState(undefined);
     const [hoveredType, setHoveredType] = useState(undefined);
     return (
         <div style={{ minHeight: "100vh", width: "100vw" }} className='d-flex mt-4'>
+            
+            <Alert variant={variant} style={{ position: "fixed", top: "4rem", right: "4rem" }} onClose={() => setShowA(false)} dismissible show={showA}>
+                {alertmsg}
+            </Alert>
 
             {loading ? <div />
                 :
@@ -215,7 +221,7 @@ export default function Decks() {
                             </Row>
                             <Row className='align-content-center justify-content-end text-center'>
 
-                                <Button className='my-4 me-4' variant='danger' style={{ width: "7rem" }} onClick={deleteDeck}>Delete deck</Button>
+                                <Button className='mt-4 mb-2 me-4' variant='danger' style={{ width: "7rem" }} onClick={deleteDeck}>Delete deck</Button>
                             </Row>
 
                         </Col>
@@ -224,7 +230,7 @@ export default function Decks() {
                     <Col xs={0} xl={0} xxl={1} />
 
                     {JSON.parse(localStorage.getItem("decks")) != undefined ? JSON.parse(localStorage.getItem("decks")).length != 0 ?
-                        <Col xs={12} xl={6} xxl={5} className='mt-4 px-4 align-content-center justify-content-center text-center'>
+                        <Col xs={12} xl={6} xxl={5} className='mt-1 px-4 align-content-center justify-content-center text-center'>
                             <PieChart
                                 style={{
                                     width: "30rem", fontFamily:
@@ -259,7 +265,7 @@ export default function Decks() {
                     }
                     {JSON.parse(localStorage.getItem("decks")) != undefined ? JSON.parse(localStorage.getItem("decks")).length != 0 ?
 
-                        <Col xs={12} xl={6} xxl={5} className='mt-4 px-4 align-content-center justify-content-center text-center'>
+                        <Col xs={12} xl={6} xxl={5} className='mt-1 px-4 align-content-center justify-content-center text-center'>
                             <PieChart
                                 style={{
                                     width: "30rem", fontFamily:
@@ -320,8 +326,6 @@ export default function Decks() {
                 <Offcanvas.Body>
                     <pre>
                         {JSON.parse(localStorage.getItem("decks")) != undefined ? JSON.parse(localStorage.getItem("decks")).length != 0 ? <div> {JSON.parse(localStorage.getItem("decks"))[currentDeck].name} </div> : <div></div> : <div></div>}
-                        {currentDeck}
-                        <br />
                         <br />
                         {cardNames.map(function (card, i) {
                             console.log()
