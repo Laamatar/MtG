@@ -51,6 +51,7 @@ export default function Deckbuilder() {
     const [APIsearch, setAPIsearch] = useState("search?q=lang=en+legal=standard");
     const [cards, setCards] = useState();
     const [error, setError] = useState("");
+    const [defaultName, setDefaultName] = useState("New Deck");
 
     const handleClose = () => setShow(false);
 
@@ -76,22 +77,6 @@ export default function Deckbuilder() {
     }
 
 
-    async function addToCollection(e) {
-        e.preventDefault();
-        var col = JSON.parse(localStorage.getItem("collection"))
-        var id = e.target.elements.idOfSelectedCardC.value;
-        if (col.length != 0) {
-            if (!col.includes(id)) {
-                console.log(id)
-                col.push(id)
-                addToLocalStorage("collection", col)
-            }
-        } else {
-            console.log(id)
-            col.push(id)
-            addToLocalStorage("collection", col)
-        }
-    }
 
     const getData = async () => {
         setLoading(true);
@@ -117,12 +102,17 @@ export default function Deckbuilder() {
 
     useEffect(() => {
         getData();
+        var d = JSON.parse(localStorage.getItem("decktoedit")) ;
+        console.log(d.name)
+
+
+            if (d.name != "") {
+                setDefaultName(d.name)
+                setDeck(d.decklist)
+                localStorage.setItem("decktoedit", JSON.stringify({name: "", deck: ""}))
+            }
         
-        // if(JSON.parse(localStorage.getItem("decktoedit")).name == ""){
-        //     //do stuff
-        //     localStorage.setItem("decktoedit", JSON.stringify({name: "", decklist: []}))
-        // }
-        
+
 
     }, []);
 
@@ -239,7 +229,7 @@ export default function Deckbuilder() {
 
     }
 
-    function saveDeck(e){
+    function saveDeck(e) {
         e.preventDefault();
         console.log(deckname)
         var deckdata = {
@@ -247,11 +237,11 @@ export default function Deckbuilder() {
             decklist: deck
         }
         var decksInLS = JSON.parse(localStorage.getItem("decks"))
-        if(decksInLS == undefined){
+        if (decksInLS == undefined) {
             decksInLS = []
         }
-        for(let i = 0; i<decksInLS.length; i++){
-            if(decksInLS[i].name == deckname){
+        for (let i = 0; i < decksInLS.length; i++) {
+            if (decksInLS[i].name == deckname) {
                 console.log("alert, name already in use")
                 console.log("message box, use " + deckname + " (copy) instead, y/n")
                 return
@@ -264,12 +254,47 @@ export default function Deckbuilder() {
     const [deckname, setDeckname] = useState("")
 
 
-    function removeCardByID(id){
+    function removeCardByID(id) {
         console.log(id)
+
+        var newdeck = [];
+        for (let i = 0; i < deck.length; i++) {
+            if (deck[i].id == id) {
+                var newamount = deck[i].amount - 1;
+
+                if (newamount != 0) {
+                    newdeck.push({ id: deck[i].id, amount: newamount })
+                }
+
+            } else {
+                newdeck.push({ id: deck[i].id, amount: deck[i].amount })
+            }
+        }
+        setDeck(newdeck)
     }
 
-    function addCardByID(id){
-        console.log(id)
+    function addCardByID(id) {
+        console.log("added card (" + id + ") to deck")
+        var indeck = false;
+        var newdeck = [];
+        for (let i = 0; i < deck.length; i++) {
+            if (deck[i].id == id) {
+                var newamount = deck[i].amount + 1;
+                indeck = true;
+                console.log("already in deck")
+                newdeck.push({ id: deck[i].id, amount: newamount })
+
+            } else {
+                newdeck.push({ id: deck[i].id, amount: deck[i].amount })
+            }
+        }
+
+        if (!indeck) {
+            setDeck([...deck, { id: id, amount: 1 }])
+            console.log("added to deck")
+        } else {
+            setDeck(newdeck)
+        }
     }
 
     return (
@@ -302,7 +327,7 @@ export default function Deckbuilder() {
                                                 type="text"
                                                 id="deckname"
                                                 name="deckname"
-                                                placeholder='name of the deck'
+                                                placeholder={defaultName}
                                                 value={deckname}
                                                 onChange={e => setDeckname(e.target.value)}
 
@@ -325,8 +350,8 @@ export default function Deckbuilder() {
 
 
             <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
-                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{width: "100%"}}>
-                    <Button variant="outline-secondary" onClick={toggleShowFilters} style={{width: "100%"}} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+                <Row className='d-flex mt-4 justify-content-center align-content-center' style={{ width: "100%" }}>
+                    <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
                     {showFilters
                         ?
                         <Form className="px-4 pt-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
