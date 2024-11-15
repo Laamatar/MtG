@@ -2,7 +2,7 @@
 
 A deckbuilder for Magic the Gathering. This is a school project for a web programming class.
 
-##Functionality:
+## Functionality:
 
 * Create Magic the Gathering decks by dragging cards.
     * Filter cards by color, type and format
