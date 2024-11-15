@@ -1,15 +1,42 @@
 import AllCards from "./allcards"
 import { Row, Col, Button, Form, Offcanvas, ListGroup, Alert } from "react-bootstrap"
-import placeholder from "../assets/placeholder.png";
 import { useState, useEffect } from "react";
+
+/**
+ * 
+ * browseallcards.jsx
+ * 
+ * Screen for looking at cards, filtering them and adding them to collection and/or wishlist
+ *
+ * 
+ */
 
 
 export default function BrowseAllCards() {
 
+    //initializing all the needed states
+
+    //alert style
+    const [variant, setVariant] = useState("success")
+    //alert message
+    const [alertmsg, setAlertmsg] = useState("Error!")
+    //if alert is shown or not
+    const [showA, setShowA] = useState(false);
+    //search query for Scryfall API. default search is for cards in english and legal in standard format
+    const [APIsearch, setAPIsearch] = useState("search?q=lang=en+legal=standard");
+    //cards the API has fetched
+    const [cards, setCards] = useState();
+    //error state for API fetch and debugging
+    const [error, setError] = useState("");
+    //if card information offcanvas is shown or not
     const [show, setShow] = useState(false);
+    //number of cards the API has found
     const [cardsFoundNum, setCardsFound] = useState(0);
+    //if site is fetching data from API
     const [loading, setLoading] = useState(false);
+    //if filter options are shown
     const [showFilters, setShowFilters] = useState(false);
+    //search options that have been chosen in the filter
     const [searchData, setSearchData] = useState(
         {
             white: false,
@@ -28,6 +55,7 @@ export default function BrowseAllCards() {
             oathbreaker: false
         }
     );
+    //currently selected card that is shown in the offcanvas
     const [selectedCard, setSelectedCard] = useState({
         name: "Card name",
         oracle: "Card text",
@@ -42,14 +70,15 @@ export default function BrowseAllCards() {
 
     })
 
-    const [APIsearch, setAPIsearch] = useState("search?q=lang=en+legal=standard");
-    const [cards, setCards] = useState();
-    const [error, setError] = useState("");
 
+    //handles closing the offcanvas
     const handleClose = () => setShow(false);
 
+    //handles clicking on a card and showing the offcanvas
     function handleShow(e) {
         e.preventDefault();
+
+        // initialize variables
         var name;
         var oracle;
         var price;
@@ -60,6 +89,9 @@ export default function BrowseAllCards() {
         var img;
         var types;
         var id;
+
+
+        //try to get card info, use defaults if failed (e.g. card is undefined)
 
         try {
             name = e.target.elements.name.value;
@@ -114,6 +146,8 @@ export default function BrowseAllCards() {
             id = "Card id";
         }
 
+
+        //make an object with the card values
         var cardinfo = {
             name: name,
             oracle: oracle,
@@ -127,11 +161,15 @@ export default function BrowseAllCards() {
             id: id
 
         };
-        setSelectedCard(cardinfo);
-        setShow(true);
 
+        //set selected card
+        setSelectedCard(cardinfo);
+
+        //set selected card
+        setShow(true);
     }
 
+    //toggles filter options
     function toggleShowFilters() {
         if (showFilters) {
             setShowFilters(false);
@@ -140,74 +178,112 @@ export default function BrowseAllCards() {
         }
     }
 
+
+    //saves given object to localStorage
     function addToLocalStorage(name, value) {
         localStorage.setItem(name, JSON.stringify(value))
 
     }
 
 
+    //adds a card to collection and saves it to localStorage 
     async function addToCollection(e) {
         e.preventDefault();
+
+        //get durrent collection
         var col = JSON.parse(localStorage.getItem("collection"))
+
+        //get id of card to be added
         var id = e.target.elements.idOfSelectedCardC.value;
+
+        //if collection from localStorage is not defined, set is as an empty list
         if (col == undefined) {
             col = []
         }
+
+        //if collection has cards, but doesn't have the given card, add card to collection and save it 
         if (col.length != 0) {
             if (!col.includes(id)) {
                 col.push(id)
                 addToLocalStorage("collection", col)
             }
+
+            //if collection doesn't have cards, add card to collection and save it
         } else {
             col.push(id)
             addToLocalStorage("collection", col)
         }
+
+        //show success alert
         setVariant("success")
         setAlertmsg("Card added to collection!")
         setShowA(true)
     }
 
 
+    //adds a card to wishlist and saves it to localStorage 
     async function addToWishlist(e) {
         e.preventDefault();
+
+        //get durrent wishlist
         var wl = JSON.parse(localStorage.getItem("wishlist"))
+
+        //get id of card to be added
         var id = e.target.elements.idOfSelectedCardWL.value;
+
+        //if wishlist from localStorage is not defined, set is as an empty list
         if (wl == undefined) {
             wl = []
         }
+
+        //if wishlist has cards, but doesn't have the given card, add card to wishlist and save it 
         if (wl.length != 0) {
             if (!wl.includes(id)) {
                 wl.push(id)
                 addToLocalStorage("wishlist", wl)
             }
+
+            //if wishlist doesn't have cards, add card to wishlist and save it
         } else {
             wl.push(id)
             addToLocalStorage("wishlist", wl)
         }
+
+        //show success alert
         setVariant("success")
         setAlertmsg("Card added to wishlist!")
         setShowA(true)
 
     }
 
+
+    //fetch data from Scryfall API
     const getData = async () => {
         setLoading(true);
         fetch("https://api.scryfall.com/cards/" + APIsearch)
             .then(response => response.json())
             .then(result => {
                 if (result.object == "error") {
+                    //something went wrong
 
+                    //show error alert
                     setVariant("danger")
                     setAlertmsg("No cards found!")
                     setShowA(true)
+
+                    //set number of fetched cards to 0
                     setCardsFound(0);
+
+                    //set error
                     setError("No cards found.")
                     setLoading(false)
                 } else {
+                    //cards found
                     setError("")
                     setCardsFound(result.total_cards)
                     setCards(result)
 
+                    //show success alert
                     setVariant("success")
                     setAlertmsg(result.total_cards + " cards found!")
                     setShowA(true)
@@ -216,14 +292,26 @@ export default function BrowseAllCards() {
             });
     }
 
+
+    //useEffect is run when APIsearch is changed
     useEffect(() => {
+
+        //fetches cards from the API
         getData();
 
     }, [APIsearch]);
 
 
+
+    //handles changes to filter options
     function handleChange(e) {
+        //hide alert
+        setShowA(false)
+
+        //initialize key to filter option
         var key = e.target.name;
+
+        //color
         if (key == "white" || key == "blue" || key == "black" || key == "red" || key == "green") {
             var value;
             if (e.target.value == "true") {
@@ -232,6 +320,8 @@ export default function BrowseAllCards() {
                 value = true;
             }
             setSearchData({ ...searchData, [key]: value })
+
+            //color exclusivity
         } else if (key == "colorexcl") {
             var value;
             if (e.target.value == "true") {
@@ -240,10 +330,16 @@ export default function BrowseAllCards() {
                 value = true;
             }
             setSearchData({ ...searchData, exclusivecolors: value })
+
+            //card type
         } else if (key == "typeselect") {
             var value = e.target.value;
             setSearchData({ ...searchData, type: value })
+
+            //search (is handled elsewhere)
         } else if (key == "searchbar") {
+
+            //search (searching from types)
         } else if (key == "typesearch") {
             var value;
             if (e.target.value == "true") {
@@ -252,6 +348,8 @@ export default function BrowseAllCards() {
                 value = true;
             }
             setSearchData({ ...searchData, searchFromTypes: value })
+
+            //format legality
         } else if (key == "standard" || key == "modern" || key == "pauper" || key == "commander" || key == "oathbreaker") {
             var value;
             if (e.target.value == "true") {
@@ -264,16 +362,23 @@ export default function BrowseAllCards() {
     }
 
 
+
+    //handles applying filters
     function handleSearchSubmit(e) {
         e.preventDefault();
 
+        //hide alert
         setShowA(false)
+
+        //initialize search query options
         var searchquery = "";
         var colors = "";
         var colorsquery = "";
         var type = "";
         var search = "";
         var format = "";
+
+        //colors
         if (searchData.white) {
             colors = colors + "w";
         }
@@ -289,24 +394,33 @@ export default function BrowseAllCards() {
         if (searchData.green) {
             colors = colors + "g";
         }
+
+
+        //color exclusivity
         if (searchData.exclusivecolors) {
             colorsquery = "colors=" + colors;
         } else {
             colorsquery = "colors>=" + colors;
         }
 
+        //if no colors are chosen, query is empty
         if (!searchData.white && !searchData.blue && !searchData.black && !searchData.red && !searchData.green) {
             colorsquery = "";
         }
 
+        //card type
         if (searchData.type != "Any card type" && searchData.type != "") {
             type = "+t=" + searchData.type;
         }
+
+        //search (from name/types)
         if (searchData.searchFromTypes && searchData.searchTerm != "") {
             search = "+t=" + searchData.searchTerm;
         } else if (searchData.searchTerm != "") {
             search = "+name=" + searchData.searchTerm;
         }
+
+        //format legality
         if (searchData.standard) {
             format = format + "+legal=standard";
         }
@@ -322,26 +436,35 @@ export default function BrowseAllCards() {
         if (searchData.oathbreaker) {
             format = format + "+legal=oathbreaker";
         }
+
+        //combine search query (and add language: english and paper cards (not digital))
         searchquery = "search?q=" + colorsquery + format + type + search + "+lang=english+game=paper";
         setAPIsearch(searchquery);
 
     }
 
-    const [variant, setVariant] = useState("success")
-    const [alertmsg, setAlertmsg] = useState("Error!")
-    const [showA, setShowA] = useState(false);
 
 
     return (
         <div className="d-flex">
+
+            {/* offcanvas that shows card name, image, types, text, price, links and buttons to add to collection or wishlist */}
             <Offcanvas show={show} onHide={handleClose} placement="end">
+
+                {/* card name */}
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
                 </Offcanvas.Header>
+
                 <Offcanvas.Body>
+
+                    {/* card image */}
                     <img src={selectedCard.img} width={"100%"} className="my-4"></img>
+
+                    {/* card types */}
                     <h4>{selectedCard.types}</h4>
 
+                    {/* card text. adds a space after a period */}
                     {selectedCard.oracle.split(".").map(function (item, idx) {
                         return (
                             <span key={idx}>
@@ -351,9 +474,10 @@ export default function BrowseAllCards() {
                     })
                     }
 
+                    {/* card price */}
                     <h5 className="py-4">Price {selectedCard.price}€</h5>
 
-
+                    {/* links */}
                     <ListGroup>
                         <ListGroup.Item><a href={selectedCard.scryfall} target="_blank">Scryfall</a></ListGroup.Item>
                         <ListGroup.Item><a href={selectedCard.gatherer} target="_blank">Gatherer</a></ListGroup.Item>
@@ -361,18 +485,24 @@ export default function BrowseAllCards() {
                         <ListGroup.Item><a href={selectedCard.tgcplayer} target="_blank">TGCPlayer</a></ListGroup.Item>
                     </ListGroup>
 
-
-
-
+                    {/* add to collection add to wishlist */}
                     <Row className="d-flex pt-4">
+
+                        {/* hidden form with card id */}
                         <Form onSubmit={addToCollection}>
                             <Form.Control type="text" defaultValue={selectedCard.id} id="idOfSelectedCardC" className="d-none" />
+
+                            {/* button */}
                             <Col xs={6} className="d-flex align-items-center justify-content-center">
                                 <Button variant="primary" type="submit" style={{ width: "90%" }}>Add to collection</Button>
                             </Col>
                         </Form>
+
+                        {/* another hidden form */}
                         <Form onSubmit={addToWishlist}>
                             <Form.Control type="text" defaultValue={selectedCard.id} id="idOfSelectedCardWL" className="d-none" />
+
+                            {/* button */}
                             <Col xs={6} className="d-flex align-items-center justify-content-center">
                                 <Button variant="secondary" type="submit" style={{ width: "90%" }}>Add to wishlist</Button>
                             </Col>
@@ -381,12 +511,20 @@ export default function BrowseAllCards() {
                 </Offcanvas.Body>
             </Offcanvas>
 
+
+            {/* filter options. bar is fixed to top of the page */}
             <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
                 <Row className='d-flex mt-4 justify-content-center align-content-center' style={{ width: "100%" }}>
+
+                    {/* toggle showing filter options */}
                     <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
+
+                    {/* filter options */}
                     {showFilters
                         ?
                         <Form className="ps-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
+
+                            {/* colors */}
                             <Col xs={12} className="pt-2">
                                 <Form.Check
                                     inline
@@ -434,6 +572,8 @@ export default function BrowseAllCards() {
                                     id={`inline-select-g`}
                                 />
                             </Col>
+
+                            {/* color exclusivity */}
                             <Col>
                                 <Form.Check
                                     label="Only these colors"
@@ -445,6 +585,7 @@ export default function BrowseAllCards() {
                                 />
                             </Col>
 
+                            {/* card type */}
                             <Col className="pt-2" xs={12} sm={6} md={4} xl={2}>
                                 <Form.Select aria-label="Default select example" name="typeselect" defaultValue={searchData.type}>
                                     <option>Any card type</option>
@@ -459,6 +600,7 @@ export default function BrowseAllCards() {
                                 </Form.Select>
                             </Col>
 
+                            {/* search bar */}
                             <Col xs={12} sm={8} md={6} xl={4} xxl={3} className="py-2">
 
                                 <Form.Label htmlFor="search">Search by name</Form.Label>
@@ -470,6 +612,8 @@ export default function BrowseAllCards() {
                                     onChange={e => setSearchData({ ...searchData, searchTerm: e.target.value })}
 
                                 />
+
+                                {/* toggle to search from name/types */}
                                 <Form.Check
                                     inline
                                     label="Search from types instead"
@@ -480,6 +624,8 @@ export default function BrowseAllCards() {
                                     id={`inline-select-searchtype`}
                                 />
                             </Col>
+
+                            {/* format legality */}
                             <Col>
                                 <p>Legal in formats:</p>
                                 <Form.Check
@@ -528,25 +674,37 @@ export default function BrowseAllCards() {
                                     id={`inline-select-oathbreaker`}
                                 />
                             </Col>
+
+                            {/* apply filters -button */}
                             <Col className="py-4" xs={12} sm={6} md={4} xl={2}>
                                 <Button type="submit" variant="primary">Apply filters</Button>
                             </Col>
                         </Form>
 
                         :
-                        <div></div>
+                        <div></div> //show empty div if filter options are hidden
 
                     }
                 </Row>
-                <Alert variant={variant} style={{ position: "fixed", top: "10rem"}} onClose={() => setShowA(false)} dismissible show={showA}>
+
+                {/* alert */}
+                <Alert variant={variant} style={{ position: "fixed", top: "10rem" }} onClose={() => setShowA(false)} dismissible show={showA}>
                     {alertmsg}
                 </Alert>
             </div>
+
+            {/* card selection. hidden if fetching data from API */}
             {!loading
                 ?
                 <Row className="px-4 py-4">
+
+                    {/* manual padding div */}
                     <div style={{ height: "5vh" }} />
+
+                    {/* number of cards fetched. shows no cards found if an error occurred */}
                     {error == "" ? <h4 className="pt-4">Found {cardsFoundNum} cards {cardsFoundNum >= 180 ? "(Loaded 180 cards)" : "(Loaded " + cardsFoundNum + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
+
+                    {/* cards from allcards.jsx */}
                     <AllCards handleClick={handleShow} cards={cards} />
                 </Row>
                 :

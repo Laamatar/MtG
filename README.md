@@ -19,4 +19,19 @@ A deckbuilder for Magic the Gathering. This is a school project for a web progra
     * Add cards to collection or wishlist
 * Browse collection and wishlist
     * Option to remove cards
+
+## Used libraries and APIs
+
+* [React Vite](https://vite.dev/)
+* [React Bootstrap](https://react-bootstrap.netlify.app/)
+* [React Router](https://reactrouter.com/en/main)
+* [dnd kit](https://dndkit.com/)
+* [React minimal pie chart](https://www.npmjs.com/package/react-minimal-pie-chart)
+* [uniqid](https://www.npmjs.com/package/uniqid)
+* [Scryfall API](https://scryfall.com/docs/api)
     
+## Issues I have noticed
+
+* When looking at cards in collection or wishlist, the cards do not load at first. The cards need to be refreshed using the supplied button.
+    * One possible way to fix it could be to add a timed function to useEffect that waits a while and then refreshes the cards. This seems like a kludge solution, however, so I didn't implement it.
+* Sometimes (some) buttons need to be clicked twice for them to do their thing. (I don't know why)

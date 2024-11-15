@@ -15,28 +15,38 @@ import Wishlist from './routes/wishlist.jsx';
 import Deckbuilder from './routes/deckbuilder.jsx';
 import Decks from './routes/decks.jsx';
 
+/**
+ * 
+ * main.jsx
+ * 
+ * Uses react router. Routes are defined here, and the root is created.
+ * 
+ * 
+ */
+
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
-    errorElement: <ErrorPage/>,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: "index",
         element: <Index />,
-      },{
+      }, {
         path: "browseallcards",
         element: <BrowseAllCards />,
-      },{
+      }, {
         path: "collection",
         element: <Collection />,
-      },{
+      }, {
         path: "wishlist",
         element: <Wishlist />,
-      },{
+      }, {
         path: "deckbuilder",
         element: <Deckbuilder />,
-      },{
+      }, {
         path: "decks",
         element: <Decks />,
       }
@@ -47,5 +57,5 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <RouterProvider router={router} />
-    </StrictMode>,
+  </StrictMode>,
 )

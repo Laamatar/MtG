@@ -1,17 +1,39 @@
 import SomeCards from "./specificcards"
 import { Row, Col, Button, Form, Offcanvas, ListGroup, Container, Alert } from "react-bootstrap"
-import placeholder from "../assets/placeholder.png";
 import { useState, useEffect } from "react";
+
+/**
+ * 
+ * collection.jsx
+ * 
+ * Screen for looking and removing cards in collection.
+ * 
+ */
 
 
 export default function Collection() {
 
-    const [collection, setCollection] = useState([]);
+    //initializing all the needed states
+
+    //alert style
+    const [variant, setVariant] = useState("success")
+    //alert message
+    const [alertmsg, setAlertmsg] = useState("Error!")
+    //if alert is shown
+    const [showA, setShowA] = useState(false);
+    //cards fetched by the API
+    const [cards, setCards] = useState([]);
+    //cards that have been filtered by filter options (cards that are shown)
     const [filteredCards, setFilteredCards] = useState([]);
+    //if card information offcanvas is shown
     const [show, setShow] = useState(false);
+    //error state
     const [error, setError] = useState("")
+    //if fetching from API is in progress
     const [loading, setLoading] = useState(false);
+    //if filter options are shown
     const [showFilters, setShowFilters] = useState(false);
+    //search options that have been chosen in the filter
     const [searchData, setSearchData] = useState(
         {
             white: true,
@@ -29,6 +51,7 @@ export default function Collection() {
             oathbreaker: false
         }
     );
+    //currently selected card that is shown in the offcanvas
     const [selectedCard, setSelectedCard] = useState({
         name: "Card name",
         oracle: "Card text",
@@ -43,12 +66,15 @@ export default function Collection() {
 
     })
 
-    const [cards, setCards] = useState([]);
 
+    //handles closing the offcanvas
     const handleClose = () => setShow(false);
 
+    //handles clicking on a card and showing the offcanvas
     function handleShow(e) {
         e.preventDefault();
+
+        // initialize variables
         var name;
         var oracle;
         var price;
@@ -59,6 +85,8 @@ export default function Collection() {
         var img;
         var types;
         var id;
+
+        //try to get card info, use defaults if failed (e.g. card is undefined)
 
         try {
             name = e.target.elements.name.value;
@@ -111,6 +139,8 @@ export default function Collection() {
             id = "Card id";
         }
 
+
+        //make an object with the card values
         var cardinfo = {
             name: name,
             oracle: oracle,
@@ -124,11 +154,16 @@ export default function Collection() {
             id: id
 
         };
-        setSelectedCard(cardinfo);
-        setShow(true);
 
+        //set selected card
+        setSelectedCard(cardinfo);
+
+        //show offcanvas
+        setShow(true);
     }
 
+
+    //toggles filter options
     function toggleShowFilters() {
         if (showFilters) {
             setShowFilters(false);
@@ -137,53 +172,87 @@ export default function Collection() {
         }
     }
 
+
+    //useEffect is run once when the page is loaded
     useEffect(() => {
-        var col = JSON.parse(localStorage.getItem("collection"))
-        if (col == undefined) {
-            col = []
-        }
-        setCollection(col);
+
+        //fetch card data from the API
         fetchData()
+
+        //show all cards, i.e. set all cards as filtered cards
         setFilteredCards(cards)
 
     }, []);
 
+
+    //refreshes the shown cards
     function refreshData() {
+
+        //show success alert
         setVariant("success")
         setAlertmsg("Refreshed cards!")
         setShowA(true)
+
+        //show all cards, i.e. set all cards as filtered cards
         setFilteredCards(cards)
     }
 
 
+
+    //asynchronous function that fetches all cards of the collection from the API 
     async function fetchData() {
+
+        //initialize empty list of promises
         var promises = [];
+
+        //check if collection is defined
         if (JSON.parse(localStorage.getItem("collection")) != undefined) {
+
+            //go over all cards in the collection
             for (let i = 0; i < JSON.parse(localStorage.getItem("collection")).length; i++) {
+
+                //add promise to get card data to the promises
                 promises.push(getData(JSON.parse(localStorage.getItem("collection"))[i]));
             }
             setLoading(true)
+
+            //wait for all promises to complete
             await Promise.all(promises).then(results => {
+                //set all cards
                 setCards(results)
             }).then(setLoading(false));
         }
     }
 
+
+    //fetches card data of a given id from the API
     async function getData(id) {
 
         return await fetch("https://api.scryfall.com/cards/" + id)
             .then(response => response.json())
             .then(result => {
                 if (result.object == "error") {
+                    //something went wrong
+
+                    //show error alert
                     setVariant("danger")
                     setAlertmsg("No cards found!")
                     setShowA(true)
+
+                    //set error state
                     setError("No cards found.")
                 } else {
+                    //cards found
+
+                    //reset error state
                     setError("");
+
+                    //show success alert
                     setVariant("success")
                     setAlertmsg("Loaded cards!")
                     setShowA(true)
+
+                    //return card data
                     return (result)
                 }
             });
@@ -192,9 +261,15 @@ export default function Collection() {
 
 
 
-
+    //handles filter option changes
     function handleChange(e) {
+        //hide alert
+        setShowA(false)
+
+        //initialize key to filter option
         var key = e.target.name;
+
+        //color
         if (key == "white" || key == "blue" || key == "black" || key == "red" || key == "green") {
             var value;
             if (e.target.value == "true") {
@@ -204,10 +279,15 @@ export default function Collection() {
             }
             setSearchData({ ...searchData, [key]: value })
 
+            //card type
         } else if (key == "typeselect") {
             var value = e.target.value;
             setSearchData({ ...searchData, type: value })
+
+            //search (handled elsewhere)
         } else if (key == "searchbar") {
+
+            //search (from types)
         } else if (key == "typesearch") {
             var value;
             if (e.target.value == "true") {
@@ -216,6 +296,8 @@ export default function Collection() {
                 value = true;
             }
             setSearchData({ ...searchData, searchFromTypes: value })
+
+            //format legality
         } else if (key == "standard" || key == "modern" || key == "pauper" || key == "commander" || key == "oathbreaker") {
             var value;
             if (e.target.value == "true") {
@@ -228,13 +310,21 @@ export default function Collection() {
     }
 
 
+    //handles applying filters
     function handleSearchSubmit(e) {
         e.preventDefault();
+
+        //hide alert
         setShowA(false)
+
+        //initialize temp variables
         var colorfiltered = []
         var filtered = []
 
+        //go over all cards 
         for (let i = 0; i < cards.length; i++) {
+
+            //colors: adds card to colorfiltered if matches with at least one filter color
 
             if (searchData.white) {
                 if (cards[i].colors.includes("W")) {
@@ -274,11 +364,16 @@ export default function Collection() {
                     }
                 }
             }
-
-
         }
+
+        //initialize new list
         var typefiltered = []
+
+        //go over all cards that passed color filtering
         for (let i = 0; i < colorfiltered.length; i++) {
+
+            //types: adds card to typefiltered if matches with at least one filter type
+
             if (searchData.type != "Any card type" && searchData.type != "") {
                 if (colorfiltered[i].type_line.includes(searchData.type)) {
                     typefiltered.push(colorfiltered[i])
@@ -294,13 +389,16 @@ export default function Collection() {
                     typefiltered.push(colorfiltered[i])
                 }
             }
-
-
         }
 
+        //initialize new list
         var searchfiltered = []
 
+        //go over all cards that passed type filtering
         for (let i = 0; i < typefiltered.length; i++) {
+
+            //search: adds card to searchfiltered if matches with search term
+
             if (searchData.searchFromTypes && searchData.searchTerm != "") {
                 if (typefiltered[i].type_line.toLowerCase().includes(searchData.searchTerm.toLowerCase())) {
                     searchfiltered.push(typefiltered[i])
@@ -314,108 +412,126 @@ export default function Collection() {
                 searchfiltered.push(typefiltered[i])
 
             }
-
-
         }
 
+        //initialize new list
         var formatfiltered = []
 
+        //go over all cards that passed search filtering
         for (let i = 0; i < typefiltered.length; i++) {
-            if (searchData.standard) {
 
+            //formats: adds card to formatfiltered if matches with at least one filter format legality
+
+            if (searchData.standard) {
                 if (searchfiltered[i].legalities.standard == "legal") {
                     formatfiltered.push(searchfiltered[i])
-
                 }
             }
             if (searchData.modern) {
-
                 if (searchfiltered[i].legalities.modern == "legal") {
                     if (!formatfiltered.includes(searchfiltered[i])) {
                         formatfiltered.push(searchfiltered[i])
                     }
-
                 }
             }
 
             if (searchData.pauper) {
-
                 if (searchfiltered[i].legalities.pauper == "legal") {
                     if (!formatfiltered.includes(searchfiltered[i])) {
                         formatfiltered.push(searchfiltered[i])
                     }
-
                 }
             }
-            if (searchData.commander) {
 
+            if (searchData.commander) {
                 if (searchfiltered[i].legalities.commander == "legal") {
                     if (!formatfiltered.includes(searchfiltered[i])) {
                         formatfiltered.push(searchfiltered[i])
-                    }
 
+                    }
                 }
             }
             if (searchData.oathbreaker) {
-
                 if (searchfiltered[i].legalities.oathbreaker == "legal") {
                     if (!formatfiltered.includes(searchfiltered[i])) {
                         formatfiltered.push(searchfiltered[i])
                     }
-
                 }
             }
+
             if (!searchData.standard && !searchData.modern && !searchData.pauper && !searchData.commander && !searchData.oathbreaker) {
                 formatfiltered.push(searchfiltered[i])
-
             }
 
+
+            //filtered cards are now cards that passed all filters
+            filtered = formatfiltered;
+
+            //set filtered cards
+            setFilteredCards(filtered);
         }
-
-        filtered = formatfiltered;
-
-
-        setFilteredCards(filtered);
     }
 
 
+    //saves given object to localStorage
     function addToLocalStorage(name, value) {
         localStorage.setItem(name, JSON.stringify(value))
         fetchData()
 
     }
 
+
+    //handles removing a card from collection
     function removeFromCollection(e) {
         e.preventDefault();
+
+        //get collection from localStorage
         var col = JSON.parse(localStorage.getItem("collection"))
+
+        //get id of card to be removed
         var id = e.target.elements.idselected.value;
+
+        //if collection includes the card, splice the id out of the collection list 
         if (col.includes(id)) {
             col.splice(col.indexOf(id), 1);
+
+            //update the collection
             addToLocalStorage("collection", col)
+
+            //refresh the cards
             refreshData()
         }
-        
+
+        //show alert
         setVariant("danger")
         setAlertmsg("Removed card from collection!")
         setShowA(true)
 
     }
 
-    const [variant, setVariant] = useState("success")
-    const [alertmsg, setAlertmsg] = useState("Error!")
-    const [showA, setShowA] = useState(false);
 
 
     return (
         <div className="d-flex">
+
+
+            {/* offcanvas that shows card name, image, types, text, price, links and buttons to add to collection or wishlist */}
             <Offcanvas show={show} onHide={handleClose} placement="end">
+
+                {/* card name */}
                 <Offcanvas.Header closeButton>
                     <Offcanvas.Title>{selectedCard.name}</Offcanvas.Title>
                 </Offcanvas.Header>
+
                 <Offcanvas.Body>
+
+                    {/* card image */}
                     <img src={selectedCard.img} width={"100%"} className="my-4"></img>
+
+                    {/* card types */}
                     <h4>{selectedCard.types}</h4>
 
+                    {/* card text (adds a space after a period) */}
                     {selectedCard.oracle.split(".").map(function (item, idx) {
                         return (
                             <span key={idx}>
@@ -425,15 +541,18 @@ export default function Collection() {
                     })
                     }
 
+                    {/* card price */}
                     <h5 className="py-4">Price {selectedCard.price}€</h5>
 
-
+                    {/* links */}
                     <ListGroup>
                         <ListGroup.Item><a href={selectedCard.scryfall} target="_blank">Scryfall</a></ListGroup.Item>
                         <ListGroup.Item><a href={selectedCard.gatherer} target="_blank">Gatherer</a></ListGroup.Item>
                         <ListGroup.Item><a href={selectedCard.edhrec} target="_blank">EDHrec</a></ListGroup.Item>
                         <ListGroup.Item><a href={selectedCard.tgcplayer} target="_blank">TGCPlayer</a></ListGroup.Item>
                     </ListGroup>
+
+                    {/* remove from collection -button with hidden form */}
                     <Form onSubmit={removeFromCollection}>
                         <Form.Control type="text" defaultValue={selectedCard.id} id="idselected" className="d-none" />
                         <Container className="d-flex align-items-center justify-content-center mt-4">
@@ -443,17 +562,24 @@ export default function Collection() {
                 </Offcanvas.Body>
             </Offcanvas>
 
+            {/* filter options. fixed to the top of the page */}
             <div className='d-flex justify-content-center align-content-center mt-2' style={{ position: "fixed", background: "#f4f4f6", width: "100%" }}>
                 <Row className='d-flex mt-4 justify-content-center align-content-center' style={{ width: "100%" }}>
+
+                    {/* button for refreshing the cards */}
                     <Container className="ps-4">
                         <Button variant="secondary" onClick={refreshData} style={{ width: "15rem" }}>Reset filters and refresh cards</Button>
                     </Container>
 
+                    {/* toggle showing filter options */}
                     <Button variant="outline-secondary" onClick={toggleShowFilters} style={{ width: "100%" }} className='mt-4'>{showFilters ? "Hide filter options" : "Show filter options"}</Button>
 
+                    {/* filter options */}
                     {showFilters
                         ?
                         <Form className="px-4 pt-4" onSubmit={handleSearchSubmit} value={searchData} onChange={handleChange}>
+
+                            {/* colors */}
                             <Col xs={12} className="pt-2">
                                 <Form.Check
                                     inline
@@ -502,6 +628,7 @@ export default function Collection() {
                                 />
                             </Col>
 
+                            {/* card type */}
                             <Col className="pt-2" xs={12} sm={6} md={4} xl={2}>
                                 <Form.Select aria-label="Default select example" name="typeselect" defaultValue={searchData.type}>
                                     <option>Any card type</option>
@@ -516,6 +643,7 @@ export default function Collection() {
                                 </Form.Select>
                             </Col>
 
+                            {/* search */}
                             <Col xs={12} sm={8} md={6} xl={4} xxl={3} className="py-2">
 
                                 <Form.Label htmlFor="search">Search by name</Form.Label>
@@ -527,6 +655,8 @@ export default function Collection() {
                                     onChange={e => setSearchData({ ...searchData, searchTerm: e.target.value })}
 
                                 />
+
+                                {/* toggle search from name/types */}
                                 <Form.Check
                                     inline
                                     label="Search from types instead"
@@ -537,6 +667,8 @@ export default function Collection() {
                                     id={`inline-select-searchtype`}
                                 />
                             </Col>
+
+                            {/* format legality */}
                             <Col>
                                 <p>Legal in formats:</p>
                                 <Form.Check
@@ -585,26 +717,37 @@ export default function Collection() {
                                     id={`inline-select-oathbreaker`}
                                 />
                             </Col>
+
+                            {/* apply filters -button */}
                             <Col className="py-4" xs={12} sm={6} md={4} xl={2}>
                                 <Button type="submit" variant="primary">Apply filters</Button>
                             </Col>
                         </Form>
 
                         :
-                        <div></div>
+                        <div></div> //shows empty div if hidden
 
                     }
                 </Row>
 
+                {/* alert */}
                 <Alert variant={variant} style={{ position: "fixed", top: "4rem" }} onClose={() => setShowA(false)} dismissible show={showA}>
                     {alertmsg}
                 </Alert>
             </div>
+
+            {/* cards in collection. hidden if fetching cards from API */}
             {!loading
                 ?
                 <Row className="px-4 py-4">
+
+                    {/* manual padding div */}
                     <div style={{ height: "8vh" }} />
+
+                    {/* number of cards fetched. shows no cards found if an error occurred */}
                     {error == "" ? <h4 className="pt-4">Found {filteredCards.length} cards {filteredCards.length >= 180 ? "(Loaded 180 cards)" : "(Loaded " + filteredCards.length + " cards)"}</h4> : <h4 className="pt-4">{error}</h4>}
+
+                    {/* cards (from specificcards.jsx) */}
                     <SomeCards handleClick={handleShow} cards={filteredCards} />
                 </Row>
                 :
